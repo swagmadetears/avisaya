@@ -73,6 +73,11 @@ export default function Hotel() {
 
             {modo === 'unirse' ? (
               <>
+                <Pressable onPress={() => { setModo('crear'); setError(''); }} style={s.pista} accessibilityRole="button">
+                  <Text style={s.pistaTexto}>
+                    ¿No tienes código? Si eres la primera persona de tu hotel en usar Avisaya, <Text style={s.pistaEnlace}>crea el hotel aquí</Text>.
+                  </Text>
+                </Pressable>
                 <Campo etiqueta="Código del hotel" value={codigo} onChangeText={(t) => setCodigo(t.toUpperCase())} placeholder="A7F3K2" autoCapitalize="characters" autoCorrect={false} grande maxLength={10} />
                 <View style={{ gap: 8 }}>
                   <Etiqueta>Trabajo en</Etiqueta>
@@ -111,4 +116,7 @@ const s = StyleSheet.create({
   pestanaActiva: { backgroundColor: color.marca },
   pestanaTexto: { fontFamily: fuente.textoFuerte, fontSize: 14, color: color.apagado },
   nota: { fontFamily: fuente.texto, fontSize: 14, color: color.apagado, textAlign: 'center' },
+  pista: { backgroundColor: color.elevado, borderRadius: 12, borderWidth: 1, borderColor: color.linea, padding: 12 },
+  pistaTexto: { fontFamily: fuente.texto, fontSize: 14, color: color.tinta, lineHeight: 20 },
+  pistaEnlace: { fontFamily: fuente.textoFuerte, color: color.acento, textDecorationLine: 'underline' },
 });
