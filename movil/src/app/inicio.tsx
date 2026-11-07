@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -22,8 +23,33 @@ export default function Inicio() {
   const router = useRouter();
   const { perfil, hotel, hoteles } = useSesion();
   const varios = hoteles.length > 1;
-  const [verHotel, setVerHotel] = useState('todos');
-  const hotelSel = varios && hoteles.some((h) => h.id === verHotel) ? verHotel : null;
+  const [verHotel, setVerHotelEstado] = useState('');
+  const [selectorHotel, setSelectorHotel] = useState(false);
+  const claveHotel = perfil ? `avisaya:hotel:${perfil.id}` : '';
+  // Recuerda el último hotel elegido en este móvil (para no tener que elegirlo cada vez)
+  useEffect(() => {
+    if (!claveHotel) return;
+    let vivo = true;
+    AsyncStorage.getItem(claveHotel)
+      .then((v) => {
+        if (vivo) setVerHotelEstado(v ?? '');
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [claveHotel]);
+  const setVerHotel = useCallback(
+    (id: string) => {
+      setVerHotelEstado(id);
+      setSelectorHotel(false);
+      if (claveHotel) AsyncStorage.setItem(claveHotel, id).catch(() => {});
+    },
+    [claveHotel],
+  );
+  // Sin elección guardada: el técnico ve todos sus hoteles; recepción y limpieza, su hotel principal
+  const verEfectivo = verHotel || (perfil?.rol === 'tecnico' ? 'todos' : (hotel?.id ?? 'todos'));
+  const hotelSel = varios && hoteles.some((h) => h.id === verEfectivo) ? verEfectivo : null;
   const idsHoteles = hoteles.map((h) => h.id).join(',');
   const nombresHotel = useMemo(() => Object.fromEntries(hoteles.map((h) => [h.id, h.nombre])) as Record<string, string>, [hoteles]);
   const notif = useRef<NotificacionRef>(null);
@@ -337,14 +363,23 @@ export default function Inicio() {
         <View style={s.logo}>
           <MaterialCommunityIcons name="wrench" size={20} color="#fff" />
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={s.hotel} numberOfLines={1}>
-            {!varios ? hotel.nombre : hotelSel ? nombresHotel[hotelSel] : `Tus ${hoteles.length} hoteles`}
-          </Text>
+        <Pressable
+          style={{ flex: 1 }}
+          disabled={!varios}
+          onPress={() => setSelectorHotel(true)}
+          accessibilityRole={varios ? 'button' : undefined}
+          accessibilityLabel={varios ? 'Cambiar de hotel' : undefined}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Text style={[s.hotel, { flexShrink: 1 }]} numberOfLines={1}>
+              {!varios ? hotel.nombre : hotelSel ? nombresHotel[hotelSel] : `Tus ${hoteles.length} hoteles`}
+            </Text>
+            {varios ? <MaterialCommunityIcons name="chevron-down" size={22} color="#fff" /> : null}
+          </View>
           <Text style={s.usuario} numberOfLines={1}>
             {perfil.nombre} · {ROLES[perfil.rol]}
+            {varios ? ' · toca para cambiar de hotel' : ''}
           </Text>
-        </View>
+        </Pressable>
         <Pressable onPress={() => router.push('/ajustes')} style={s.botonBarra} accessibilityRole="button" accessibilityLabel="Ajustes">
           <MaterialCommunityIcons name="cog-outline" size={22} color="#fff" />
         </Pressable>
@@ -364,6 +399,35 @@ export default function Inicio() {
       />
 
       <Notificacion ref={notif} />
+
+      <Modal visible={selectorHotel} transparent animationType="slide" onRequestClose={() => setSelectorHotel(false)}>
+        <Pressable style={s.hojaFondo} onPress={() => setSelectorHotel(false)} accessibilityLabel="Cerrar">
+          <Pressable style={[s.hoja, { paddingBottom: insets.bottom + 16 }]} onPress={() => {}}>
+            <Text style={s.hojaTitulo}>¿Qué hotel quieres ver?</Text>
+            <Text style={s.hojaSub}>Los avisos nuevos se crearán en el hotel que elijas.</Text>
+            {[{ id: 'todos', nombre: 'Todos mis hoteles' }, ...hoteles].map((h) => {
+              const activo = (h.id === 'todos' && !hotelSel) || h.id === hotelSel;
+              const n = todosPartes.filter((p) => p.estado !== 'resuelto' && (h.id === 'todos' || p.hotel_id === h.id)).length;
+              const urg = todosPartes.filter((p) => p.estado !== 'resuelto' && p.prioridad === 'urgente' && (h.id === 'todos' || p.hotel_id === h.id)).length;
+              return (
+                <Pressable key={h.id} onPress={() => setVerHotel(h.id)} style={[s.opHotel, activo && s.opHotelActivo]} accessibilityRole="radio" accessibilityState={{ checked: activo }}>
+                  <MaterialCommunityIcons name={h.id === 'todos' ? 'domain' : 'office-building-outline'} size={22} color={activo ? color.acento : color.marca2} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.opHotelNombre} numberOfLines={1}>
+                      {h.nombre}
+                    </Text>
+                    <Text style={s.opHotelSub}>
+                      {n === 1 ? '1 abierto' : `${n} abiertos`}
+                      {urg ? ` · ${urg} urgente${urg > 1 ? 's' : ''}` : ''}
+                    </Text>
+                  </View>
+                  {activo ? <MaterialCommunityIcons name="check-circle" size={22} color={color.acento} /> : null}
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <Modal visible={!!fotoGrande} transparent animationType="fade" onRequestClose={() => setFotoGrande(null)}>
         <Pressable style={s.visor} onPress={() => setFotoGrande(null)} accessibilityLabel="Cerrar foto">
@@ -414,6 +478,10 @@ const s = StyleSheet.create({
   bloqueadasNums: { fontFamily: fuente.numero, color: color.pendiente },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   hoteles: { gap: 8, paddingRight: 8 },
+  opHotel: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, borderWidth: 1.5, borderColor: color.linea, backgroundColor: color.elevado },
+  opHotelActivo: { borderColor: color.acento, backgroundColor: suave(color.acento, 0.08) },
+  opHotelNombre: { fontFamily: fuente.textoFuerte, fontSize: 16, color: color.tinta },
+  opHotelSub: { fontFamily: fuente.texto, fontSize: 13, color: color.apagado },
   hotelChip: { flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: 220, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, backgroundColor: color.superficie, borderWidth: 1.5, borderColor: color.linea },
   hotelChipActivo: { backgroundColor: color.marca, borderColor: color.marca },
   hotelChipTexto: { fontFamily: fuente.textoFuerte, fontSize: 14, color: color.tinta, flexShrink: 1 },

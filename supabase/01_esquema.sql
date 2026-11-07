@@ -144,7 +144,10 @@ begin
   select id into hid from public.hoteles where codigo_union = upper(trim(p_codigo));
   if hid is null then raise exception 'Código de hotel incorrecto'; end if;
   if exists (select 1 from public.perfiles where id = auth.uid()) then
-    update public.perfiles set activo = true where id = auth.uid();
+    -- Una cuenta desactivada por administración no se reactiva sola con un código
+    if exists (select 1 from public.perfiles where id = auth.uid() and not activo) then
+      raise exception 'Tu cuenta está desactivada. Habla con administración de tu hotel.';
+    end if;
   else
     if p_rol not in ('recepcion','limpieza','tecnico') then raise exception 'Rol no válido'; end if;
     insert into public.perfiles(id, hotel_id, nombre, rol) values (auth.uid(), hid, trim(p_mi_nombre), p_rol);
@@ -152,6 +155,70 @@ begin
   insert into public.perfil_hoteles(perfil_id, hotel_id) values (auth.uid(), hid) on conflict do nothing;
   return hid;
 end $$;
+
+-- ---------- Equipo: lo que puede hacer administración --------------------
+-- Solo sobre personas que comparten algún hotel con quien administra,
+-- y solo con los hoteles en los que quien administra también está.
+
+-- Lista del equipo con su correo y sus hoteles (los que ve quien administra)
+create or replace function public.admin_equipo()
+returns table (id uuid, nombre text, rol text, activo boolean, correo text, hoteles uuid[])
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if coalesce(public.mi_rol(), '') <> 'admin' then raise exception 'Solo administración puede ver el equipo'; end if;
+  return query
+    select p.id, p.nombre, p.rol, p.activo, u.email::text,
+           array(select ph.hotel_id from public.perfil_hoteles ph
+                  where ph.perfil_id = p.id and ph.hotel_id in (select public.mis_hoteles()) order by ph.hotel_id)
+      from public.perfiles p
+      left join auth.users u on u.id = p.id
+     where public.comparte_hotel(p.id)
+     order by p.activo desc, p.nombre;
+end $$;
+
+-- Cambiar nombre, departamento y si la cuenta está activa
+create or replace function public.admin_editar_persona(p_perfil uuid, p_nombre text, p_rol text, p_activo boolean)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if coalesce(public.mi_rol(), '') <> 'admin' then raise exception 'Solo administración puede cambiar el equipo'; end if;
+  if not public.comparte_hotel(p_perfil) then raise exception 'Esa persona no está en tus hoteles'; end if;
+  if p_rol not in ('admin','recepcion','limpieza','tecnico') then raise exception 'Departamento no válido'; end if;
+  if char_length(trim(coalesce(p_nombre, ''))) not between 1 and 40 then raise exception 'El nombre debe tener entre 1 y 40 letras'; end if;
+  if p_perfil = auth.uid() and (p_rol <> 'admin' or not p_activo) then
+    raise exception 'No puedes quitarte tu propio acceso de administración. Pídeselo a otra persona de administración.';
+  end if;
+  update public.perfiles set nombre = trim(p_nombre), rol = p_rol, activo = p_activo where id = p_perfil;
+end $$;
+
+-- Dar o quitar un hotel a una persona
+create or replace function public.admin_hotel_persona(p_perfil uuid, p_hotel uuid, p_dentro boolean)
+returns void
+language plpgsql security definer set search_path = public as $$
+declare otro uuid;
+begin
+  if coalesce(public.mi_rol(), '') <> 'admin' then raise exception 'Solo administración puede cambiar el equipo'; end if;
+  if not public.es_miembro(p_hotel) then raise exception 'Solo puedes gestionar hoteles en los que estás'; end if;
+  if not public.comparte_hotel(p_perfil) then raise exception 'Esa persona no está en tus hoteles'; end if;
+  if p_dentro then
+    insert into public.perfil_hoteles(perfil_id, hotel_id) values (p_perfil, p_hotel) on conflict do nothing;
+  else
+    select hotel_id into otro from public.perfil_hoteles where perfil_id = p_perfil and hotel_id <> p_hotel limit 1;
+    if otro is null then
+      raise exception 'Tiene que quedarse en al menos un hotel. Para quitarle el acceso, desactiva su cuenta.';
+    end if;
+    delete from public.perfil_hoteles where perfil_id = p_perfil and hotel_id = p_hotel;
+    -- Si era su hotel principal, pasa a otro de los suyos
+    update public.perfiles set hotel_id = otro where id = p_perfil and hotel_id = p_hotel;
+  end if;
+end $$;
+
+revoke all on function public.admin_equipo() from public, anon;
+revoke all on function public.admin_editar_persona(uuid, text, text, boolean) from public, anon;
+revoke all on function public.admin_hotel_persona(uuid, uuid, boolean) from public, anon;
+grant execute on function public.admin_equipo() to authenticated;
+grant execute on function public.admin_editar_persona(uuid, text, text, boolean) to authenticated;
+grant execute on function public.admin_hotel_persona(uuid, uuid, boolean) to authenticated;
 
 -- ---------- Disparadores (fechas e historial automáticos) -------------
 
@@ -228,10 +295,8 @@ create policy "editar mi perfil" on public.perfiles for update
   using (id = auth.uid())
   with check (id = auth.uid() and hotel_id = public.mi_hotel_id() and rol = public.mi_rol());
 
+-- La administración cambia a otras personas con las funciones de «Equipo» (más abajo)
 drop policy if exists "admin gestiona perfiles" on public.perfiles;
-create policy "admin gestiona perfiles" on public.perfiles for update
-  using (public.comparte_hotel(id) and public.mi_rol() = 'admin')
-  with check (public.comparte_hotel(id));
 
 drop policy if exists "ver miembros" on public.perfil_hoteles;
 create policy "ver miembros" on public.perfil_hoteles for select

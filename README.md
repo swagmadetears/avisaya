@@ -91,8 +91,20 @@ npm install
 - Todo en tiempo real y aviso dentro de la app (con vibración) cuando llega algo.
 - **Varios hoteles por persona**: un técnico (o cualquiera) puede unirse a varios hoteles con sus códigos (Ajustes → Añadir otro hotel) y ve todos los partes juntos, con el nombre del hotel en cada tarjeta y en cada notificación, y un selector para ver uno solo.
 - Cada persona solo ve los hoteles a los que pertenece.
+- **Cambio rápido de hotel**: tocando el nombre del hotel arriba; la app recuerda el último elegido.
+- **Equipo** (solo administración, en Ajustes): cambiar el departamento de cada persona, darle o quitarle hoteles, nombrar más administradores y desactivar cuentas sin borrar su historial.
+- **¿Olvidaste tu contraseña?** con un código por correo.
 - **Buscador**: por habitación, tipo de avería, texto, código (PT-…) o nombre, también en partes antiguos y sin necesidad de tildes. **Filtro por fecha** (hoy, ayer, 7 o 30 días, o un rango a elegir).
 - **Detalle de cada parte** con historial y tiempos, e **informe PDF** para guardar o enviar (WhatsApp, correo…).
+
+## Recuperar contraseña (configurar una vez en Supabase)
+En Supabase → **Authentication → Emails → Reset password**, añade el código al mensaje, por ejemplo:
+
+```
+<p>Tu código para cambiar la contraseña de Avisaya es: <b>{{ .Token }}</b></p>
+```
+
+En la app: «¿Olvidaste tu contraseña?» → correo → código → contraseña nueva.
 
 ## Notificaciones con el móvil bloqueado
 - Base de datos: ejecutar `supabase/02_notificaciones.sql` en el SQL Editor.

@@ -79,6 +79,17 @@ export default function Ajustes() {
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
+        {perfil.rol === 'admin' ? (
+          <Pressable onPress={() => router.push('/equipo')} style={s.equipo} accessibilityRole="button">
+            <MaterialCommunityIcons name="account-group-outline" size={26} color={color.acento} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.equipoTitulo}>Equipo</Text>
+              <Text style={s.ayuda}>Departamentos, hoteles y acceso de cada persona</Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={22} color={color.apagado} />
+          </Pressable>
+        ) : null}
+
         <Text style={s.seccion}>{hoteles.length > 1 ? `Tus hoteles (${hoteles.length})` : 'Tu hotel'}</Text>
         {hoteles.map((h) => (
           <View key={h.id} style={s.codigoCaja}>
@@ -177,6 +188,8 @@ const s = StyleSheet.create({
   cerrar: { width: 42, height: 42, borderRadius: 12, backgroundColor: color.elevado, alignItems: 'center', justifyContent: 'center' },
   tarjeta: { backgroundColor: color.superficie, borderRadius: 18, padding: 16, gap: 12, ...sombra },
   codigoCaja: { backgroundColor: color.marca, borderRadius: 18, padding: 16, gap: 8 },
+  equipo: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: color.superficie, borderRadius: 18, padding: 16, borderWidth: 1.5, borderColor: color.acento, ...sombra },
+  equipoTitulo: { fontFamily: fuente.titulo, fontSize: 17, color: color.tinta },
   seccion: { fontFamily: fuente.titulo, fontSize: 16, color: color.tinta, marginBottom: -4 },
   hotelNombre: { flex: 1, fontFamily: fuente.titulo, fontSize: 17, color: '#fff' },
   ayuda: { fontFamily: fuente.texto, fontSize: 13.5, color: color.apagado, lineHeight: 19 },

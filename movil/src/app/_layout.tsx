@@ -20,9 +20,9 @@ function Guardian() {
   useEffect(() => {
     if (cargando || !perfilListo) return;
     const actual = segmentos[0] ?? '';
-    const destino = !session ? 'entrar' : !perfil ? 'hotel' : null;
+    const destino = !session ? 'entrar' : !perfil ? 'hotel' : !perfil.activo ? 'desactivada' : null;
     if (destino && actual !== destino) router.replace(`/${destino}`);
-    else if (!destino && (actual === 'entrar' || actual === 'hotel' || actual === '')) router.replace('/inicio');
+    else if (!destino && (actual === 'entrar' || actual === 'hotel' || actual === 'desactivada' || actual === '')) router.replace('/inicio');
   }, [cargando, perfilListo, session, perfil, segmentos, router]);
 
   return null;
@@ -57,6 +57,8 @@ export default function Layout() {
           <Stack.Screen name="parte/[id]" />
           <Stack.Screen name="nuevo" options={{ presentation: 'modal' }} />
           <Stack.Screen name="ajustes" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="equipo" />
+          <Stack.Screen name="desactivada" />
         </Stack>
       </SesionProvider>
     </SafeAreaProvider>
