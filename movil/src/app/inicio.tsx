@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FiltroFecha } from '../components/FiltroFecha';
 import { Notificacion, type NotificacionRef } from '../components/Notificacion';
@@ -20,7 +20,12 @@ const ORDEN = { en_camino: 0, en_curso: 1, pendiente: 2, esperando: 3, resuelto:
 export default function Inicio() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { perfil, hotel } = useSesion();
+  const { perfil, hotel, hoteles } = useSesion();
+  const varios = hoteles.length > 1;
+  const [verHotel, setVerHotel] = useState('todos');
+  const hotelSel = varios && hoteles.some((h) => h.id === verHotel) ? verHotel : null;
+  const idsHoteles = hoteles.map((h) => h.id).join(',');
+  const nombresHotel = useMemo(() => Object.fromEntries(hoteles.map((h) => [h.id, h.nombre])) as Record<string, string>, [hoteles]);
   const notif = useRef<NotificacionRef>(null);
   const [filtro, setFiltro] = useState('');
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -39,7 +44,7 @@ export default function Inicio() {
   const lim = limites(rango);
   const desdeMs = lim.desde?.getTime() ?? null;
   const hastaMs = lim.hasta?.getTime() ?? null;
-  const claveBusqueda = `${hayTexto ? textoBusqueda : ''}|${desdeMs ?? ''}|${hastaMs ?? ''}`;
+  const claveBusqueda = `${hayTexto ? textoBusqueda : ''}|${desdeMs ?? ''}|${hastaMs ?? ''}|${hotelSel ?? ''}`;
 
   // Busca también en partes antiguos (en la base de datos), medio segundo después de dejar de escribir
   useEffect(() => {
@@ -47,7 +52,7 @@ export default function Inicio() {
     let vivo = true;
     const t = setTimeout(async () => {
       try {
-        const r = await buscarPartes(hayTexto ? textoBusqueda : '', desdeMs === null ? null : new Date(desdeMs), hastaMs === null ? null : new Date(hastaMs));
+        const r = await buscarPartes(hayTexto ? textoBusqueda : '', desdeMs === null ? null : new Date(desdeMs), hastaMs === null ? null : new Date(hastaMs), hotelSel);
         if (vivo) {
           setRemotos({ clave: claveBusqueda, partes: r });
           setErrorBusqueda('');
@@ -60,19 +65,23 @@ export default function Inicio() {
       vivo = false;
       clearTimeout(t);
     };
-  }, [buscandoActivo, hayTexto, textoBusqueda, desdeMs, hastaMs, claveBusqueda]);
+  }, [buscandoActivo, hayTexto, textoBusqueda, desdeMs, hastaMs, hotelSel, claveBusqueda]);
 
   const yoRef = useRef(perfil);
+  const hotelesRef = useRef(nombresHotel);
   useEffect(() => {
     yoRef.current = perfil;
-  }, [perfil]);
+    hotelesRef.current = nombresHotel;
+  }, [perfil, nombresHotel]);
 
   // Qué avisos recibe cada persona
   const alCambiar = useCallback((c: CambioParte) => {
     const yo = yoRef.current;
     if (!yo) return;
     const p = c.parte;
-    const donde = (esHabitacion(p.habitacion) ? 'Hab. ' : '') + p.habitacion;
+    // Con varios hoteles, cada aviso dice de cuál es
+    const nh = hotelesRef.current;
+    const donde = (Object.keys(nh).length > 1 && nh[p.hotel_id] ? nh[p.hotel_id] + ' · ' : '') + (esHabitacion(p.habitacion) ? 'Hab. ' : '') + p.habitacion;
     if (c.tipo === 'nuevo') {
       if (p.creado_por === yo.id) return;
       if (yo.rol === 'tecnico') notif.current?.mostrar((p.prioridad === 'urgente' ? 'Urgente · ' : 'Nuevo parte · ') + donde, p.categoria + (p.descripcion ? ' — ' + p.descripcion : ''), p.prioridad === 'urgente');
@@ -91,7 +100,9 @@ export default function Inicio() {
     }
   }, []);
 
-  const { partes, perfiles, fotos, cargando, error, recargar, actualizar } = usePartes(hotel?.id, alCambiar);
+  const { partes: todosPartes, perfiles, fotos, cargando, error, recargar, actualizar } = usePartes(idsHoteles, alCambiar);
+  // Partes del hotel elegido arriba (o de todos)
+  const partes = useMemo(() => (hotelSel ? todosPartes.filter((p) => p.hotel_id === hotelSel) : todosPartes), [todosPartes, hotelSel]);
 
   const rol = perfil?.rol ?? 'recepcion';
   const esTecnico = rol === 'tecnico';
@@ -221,7 +232,7 @@ export default function Inicio() {
 
   if (!perfil || !hotel) return null;
 
-  const bloqueadas = [...new Set(abiertos.filter((p) => p.bloquea).map((p) => p.habitacion))];
+  const bloqueadas = [...new Set(abiertos.filter((p) => p.bloquea).map((p) => (varios && !hotelSel ? `${nombresHotel[p.hotel_id] ?? ''} ${p.habitacion}` : p.habitacion)))];
   const vacio = !partes.length
     ? esTecnico
       ? 'No hay partes. Cuando recepción o limpieza avisen, te llegará aquí.'
@@ -234,6 +245,23 @@ export default function Inicio() {
 
   const cabeceraLista = (
     <View style={{ gap: 14 }}>
+      {varios ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.hoteles}>
+          {[{ id: 'todos', nombre: 'Todos los hoteles' }, ...hoteles].map((h) => {
+            const activo = (h.id === 'todos' && !hotelSel) || h.id === hotelSel;
+            const n = todosPartes.filter((p) => p.estado !== 'resuelto' && (h.id === 'todos' || p.hotel_id === h.id)).length;
+            return (
+              <Pressable key={h.id} onPress={() => setVerHotel(h.id)} style={[s.hotelChip, activo && s.hotelChipActivo]} accessibilityRole="tab" accessibilityState={{ selected: activo }}>
+                <MaterialCommunityIcons name={h.id === 'todos' ? 'domain' : 'office-building-outline'} size={16} color={activo ? '#fff' : color.marca2} />
+                <Text style={[s.hotelChipTexto, activo && { color: '#fff' }]} numberOfLines={1}>
+                  {h.nombre}
+                </Text>
+                <Text style={[s.hotelChipNum, activo && { color: '#fff' }]}>{n}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      ) : null}
       <View style={s.resumen}>
         {resumen.map((r) => (
           <Pressable key={r.texto} style={s.dato} onPress={() => setFiltro(r.filtro)} accessibilityRole="button" accessibilityLabel={`${r.n} ${r.texto}`}>
@@ -249,7 +277,7 @@ export default function Inicio() {
       </View>
 
       {!esTecnico ? (
-        <Boton texto="Avisar de una avería" icono="plus-circle" tipo="principal" grande onPress={() => router.push('/nuevo')} />
+        <Boton texto="Avisar de una avería" icono="plus-circle" tipo="principal" grande onPress={() => router.push({ pathname: '/nuevo', params: { hotel: hotelSel ?? '' } })} />
       ) : null}
 
       {bloqueadas.length && rol !== 'limpieza' ? (
@@ -311,7 +339,7 @@ export default function Inicio() {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.hotel} numberOfLines={1}>
-            {hotel.nombre}
+            {!varios ? hotel.nombre : hotelSel ? nombresHotel[hotelSel] : `Tus ${hoteles.length} hoteles`}
           </Text>
           <Text style={s.usuario} numberOfLines={1}>
             {perfil.nombre} · {ROLES[perfil.rol]}
@@ -331,7 +359,7 @@ export default function Inicio() {
         ListEmptyComponent={cargando ? undefined : <Text style={s.vacio}>{buscandoActivo ? 'No hay partes que coincidan con la búsqueda.' : vacio}</Text>}
         refreshControl={<RefreshControl refreshing={false} onRefresh={recargar} tintColor={color.marca} />}
         renderItem={({ item }) => (
-          <ParteTarjeta parte={item} yo={perfil} perfiles={perfiles} foto={item.foto_path ? fotos[item.foto_path] : undefined} ocupado={ocupado === item.id} onAccion={hacer} onFoto={setFotoGrande} onDetalle={abrirDetalle} />
+          <ParteTarjeta parte={item} yo={perfil} perfiles={perfiles} foto={item.foto_path ? fotos[item.foto_path] : undefined} ocupado={ocupado === item.id} onAccion={hacer} onFoto={setFotoGrande} onDetalle={abrirDetalle} hotelNombre={varios ? nombresHotel[item.hotel_id] : undefined} />
         )}
       />
 
@@ -385,6 +413,11 @@ const s = StyleSheet.create({
   bloqueadas: { fontFamily: fuente.textoMedio, fontSize: 13.5, color: color.apagado },
   bloqueadasNums: { fontFamily: fuente.numero, color: color.pendiente },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  hoteles: { gap: 8, paddingRight: 8 },
+  hotelChip: { flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: 220, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, backgroundColor: color.superficie, borderWidth: 1.5, borderColor: color.linea },
+  hotelChipActivo: { backgroundColor: color.marca, borderColor: color.marca },
+  hotelChipTexto: { fontFamily: fuente.textoFuerte, fontSize: 14, color: color.tinta, flexShrink: 1 },
+  hotelChipNum: { fontFamily: fuente.numero, fontSize: 13, color: color.apagado },
   buscador: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea, borderRadius: 14, paddingHorizontal: 12 },
   buscadorInput: { flex: 1, fontFamily: fuente.texto, fontSize: 15.5, color: color.tinta, paddingVertical: 11 },
   resultadosTexto: { fontFamily: fuente.textoMedio, fontSize: 13.5, color: color.apagado },

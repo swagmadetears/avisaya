@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,7 +22,10 @@ async function reducir(uri: string): Promise<string> {
 export default function Nuevo() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { perfil, hotel } = useSesion();
+  const { perfil, hotel, hoteles } = useSesion();
+  const params = useLocalSearchParams<{ hotel?: string }>();
+  // Hotel del aviso: el elegido en la pantalla principal o el principal de la persona
+  const [hotelId, setHotelId] = useState(() => (params.hotel && hoteles.some((h) => h.id === params.hotel) ? params.hotel : (hotel?.id ?? '')));
   const [habitacion, setHabitacion] = useState('');
   const [cat, setCat] = useState(CATEGORIAS[0].nombre);
   const [desc, setDesc] = useState('');
@@ -50,15 +53,15 @@ export default function Nuevo() {
 
   async function enviar() {
     setError('');
-    if (!perfil || !hotel) return;
+    if (!perfil || !hotelId) return setError('Elige el hotel.');
     if (!habitacion.trim()) return setError('Escribe la habitación o la zona.');
     if (!desc.trim() && !foto) return setError('Cuenta qué pasa o añade una foto.');
     setEnviando(true);
     try {
       let foto_path: string | null = null;
-      if (foto) foto_path = await subirFoto(hotel.id, foto);
+      if (foto) foto_path = await subirFoto(hotelId, foto);
       const { error: e } = await supabase.from('partes').insert({
-        hotel_id: hotel.id,
+        hotel_id: hotelId,
         habitacion: habitacion.trim().slice(0, 30),
         categoria: cat,
         descripcion: desc.trim().slice(0, 600),
@@ -90,6 +93,17 @@ export default function Nuevo() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 18, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
+        {hoteles.length > 1 ? (
+          <View style={{ gap: 8 }}>
+            <Etiqueta>Hotel</Etiqueta>
+            <View style={s.hotelesFila}>
+              {hoteles.map((h) => (
+                <Opcion key={h.id} activa={hotelId === h.id} onPress={() => setHotelId(h.id)} texto={h.nombre} icono="office-building-outline" tono={color.marca2} style={{ flexBasis: '47%', flexGrow: 1 }} />
+              ))}
+            </View>
+          </View>
+        ) : null}
+
         <Campo etiqueta="Habitación o zona" value={habitacion} onChangeText={setHabitacion} placeholder="214" grande autoCorrect={false} maxLength={30} />
 
         <View style={{ gap: 8 }}>
@@ -150,6 +164,7 @@ const s = StyleSheet.create({
   titulo: { fontFamily: fuente.titulo, fontSize: 21, color: color.tinta },
   cerrar: { width: 42, height: 42, borderRadius: 12, backgroundColor: color.elevado, alignItems: 'center', justifyContent: 'center' },
   rejilla: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -4 },
+  hotelesFila: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   celda: { width: '33.333%', padding: 4 },
   foto: { width: '100%', aspectRatio: 4 / 3, borderRadius: 14, backgroundColor: color.elevado },
   interruptor: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea, borderRadius: 14, padding: 14 },

@@ -16,8 +16,10 @@ create extension if not exists unaccent;
 -- Texto (opcional, mínimo 2 letras): habitación/zona, tipo, descripción, nota del técnico,
 -- código y nombres de quien avisó o del técnico. Fechas (opcionales): fecha del aviso,
 -- desde (incluida) hasta (sin incluir). Hace falta texto o al menos una fecha.
+-- Busca en todos los hoteles de la persona, o solo en p_hotel si se indica.
 drop function if exists public.buscar_partes(text);
-create or replace function public.buscar_partes(p_texto text default '', p_desde timestamptz default null, p_hasta timestamptz default null)
+drop function if exists public.buscar_partes(text, timestamptz, timestamptz);
+create or replace function public.buscar_partes(p_texto text default '', p_desde timestamptz default null, p_hasta timestamptz default null, p_hotel uuid default null)
 returns setof public.partes
 language sql stable
 set search_path = public, extensions as $$
@@ -27,7 +29,8 @@ set search_path = public, extensions as $$
   )
   select p.*
     from public.partes p, t
-   where p.hotel_id = public.mi_hotel_id()
+   where p.hotel_id in (select public.mis_hoteles())
+     and (p_hotel is null or p.hotel_id = p_hotel)
      and (char_length(t.texto) >= 2 or p_desde is not null or p_hasta is not null)
      and (p_desde is null or p.creado_en >= p_desde)
      and (p_hasta is null or p.creado_en <  p_hasta)
@@ -39,7 +42,7 @@ set search_path = public, extensions as $$
    limit 100
 $$;
 
-revoke all on function public.buscar_partes(text, timestamptz, timestamptz) from public, anon;
-grant execute on function public.buscar_partes(text, timestamptz, timestamptz) to authenticated;
+revoke all on function public.buscar_partes(text, timestamptz, timestamptz, uuid) from public, anon;
+grant execute on function public.buscar_partes(text, timestamptz, timestamptz, uuid) to authenticated;
 
 select 'Avisaya: búsqueda preparada' as resultado;

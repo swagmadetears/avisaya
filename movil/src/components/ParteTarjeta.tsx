@@ -30,6 +30,8 @@ type Props = {
   onAccion: (p: Parte, a: Accion) => void;
   onFoto: (url: string) => void;
   onDetalle: (p: Parte) => void;
+  /** Nombre del hotel, solo si la persona trabaja en varios */
+  hotelNombre?: string;
 };
 
 function PasoBarra({ parte }: { parte: Parte }) {
@@ -81,7 +83,7 @@ function acciones(p: Parte, yo: Perfil): { a: Accion; texto: string; tipo: 'prin
   }
 }
 
-function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onFoto, onDetalle }: Props) {
+function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onFoto, onDetalle, hotelNombre }: Props) {
   const cat = categoria(p.categoria);
   const abierto = p.estado !== 'resuelto';
   const hab = esHabitacion(p.habitacion);
@@ -102,6 +104,14 @@ function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onF
   return (
     <View style={[s.tarjeta, !abierto && { opacity: 0.82 }]}>
       {p.prioridad === 'urgente' && abierto ? <View style={s.franja} /> : null}
+      {hotelNombre ? (
+        <View style={s.hotel}>
+          <MaterialCommunityIcons name="office-building-outline" size={15} color={color.marca2} />
+          <Text style={s.hotelTexto} numberOfLines={1}>
+            {hotelNombre}
+          </Text>
+        </View>
+      ) : null}
       <View style={s.cabecera}>
         <View style={s.llave}>
           <View style={s.llaveAgujero} />
@@ -165,6 +175,8 @@ const s = StyleSheet.create({
   tarjeta: { backgroundColor: color.superficie, borderRadius: 18, padding: 14, gap: 12, overflow: 'hidden', ...sombra },
   franja: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, backgroundColor: color.pendiente },
   cabecera: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  hotel: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: suave(color.marca2, 0.1), borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginBottom: -4 },
+  hotelTexto: { fontFamily: fuente.textoFuerte, fontSize: 12.5, color: color.marca2, letterSpacing: 0.2 },
   llave: {
     minWidth: 68,
     maxWidth: 90,

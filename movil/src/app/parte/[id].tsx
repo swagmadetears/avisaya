@@ -18,7 +18,7 @@ export default function DetalleParte() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { hotel } = useSesion();
+  const { hoteles } = useSesion();
   const [parte, setParte] = useState<Parte | null>(null);
   const [perfiles, setPerfiles] = useState<Record<string, Perfil>>({});
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -28,10 +28,10 @@ export default function DetalleParte() {
   const [generando, setGenerando] = useState(false);
 
   const cargar = useCallback(async () => {
-    if (!id || !hotel) return;
+    if (!id) return;
     const [{ data: p, error: e }, { data: pf }, ev] = await Promise.all([
       supabase.from('partes').select(CAMPOS).eq('id', id).maybeSingle(),
-      supabase.from('perfiles').select('id, hotel_id, nombre, rol, activo').eq('hotel_id', hotel.id),
+      supabase.from('perfiles').select('id, hotel_id, nombre, rol, activo'),
       cargarEventos(id),
     ]);
     if (e || !p) setError('No se ha encontrado este parte.');
@@ -47,7 +47,7 @@ export default function DetalleParte() {
     if (pf) setPerfiles(Object.fromEntries((pf as Perfil[]).map((x) => [x.id, x])));
     setEventos(ev);
     setCargando(false);
-  }, [id, hotel]);
+  }, [id]);
 
   useEffect(() => {
     // Carga desde la red: los setState ocurren tras el await, no de forma síncrona.
@@ -56,6 +56,7 @@ export default function DetalleParte() {
   }, [cargar]);
 
   async function informe() {
+    const hotel = parte ? hoteles.find((h) => h.id === parte.hotel_id) : undefined;
     if (!parte || !hotel) return;
     setGenerando(true);
     setError('');

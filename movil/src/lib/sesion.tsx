@@ -10,7 +10,10 @@ type Sesion = {
   perfilListo: boolean;
   session: Session | null;
   perfil: Perfil | null;
+  /** Hotel principal (el primero al que se unió) */
   hotel: Hotel | null;
+  /** Todos los hoteles en los que trabaja (ordenados por nombre) */
+  hoteles: Hotel[];
   /** Si este móvil recibe avisos con la app cerrada */
   estadoPush: EstadoPush | null;
   recargar: () => Promise<void>;
@@ -24,6 +27,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [hotel, setHotel] = useState<Hotel | null>(null);
+  const [hoteles, setHoteles] = useState<Hotel[]>([]);
   const [perfilDe, setPerfilDe] = useState<string | null>(null);
   const [estadoPush, setEstadoPush] = useState<EstadoPush | null>(null);
   const tokenPush = useRef<string | undefined>(undefined);
@@ -32,16 +36,21 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     if (!uid) {
       setPerfil(null);
       setHotel(null);
+      setHoteles([]);
       setPerfilDe(null);
       return;
     }
     const { data: p } = await supabase.from('perfiles').select('id, hotel_id, nombre, rol, activo').eq('id', uid).maybeSingle();
     setPerfil((p as Perfil | null) ?? null);
     if (p) {
-      const { data: h } = await supabase.from('hoteles').select('id, nombre, codigo_union').eq('id', p.hotel_id).maybeSingle();
-      setHotel((h as Hotel | null) ?? null);
+      // La seguridad de la base de datos devuelve solo los hoteles de esta persona
+      const { data: hs } = await supabase.from('hoteles').select('id, nombre, codigo_union').order('nombre');
+      const lista = (hs ?? []) as Hotel[];
+      setHoteles(lista);
+      setHotel(lista.find((h) => h.id === p.hotel_id) ?? lista[0] ?? null);
     } else {
       setHotel(null);
+      setHoteles([]);
     }
     setPerfilDe(uid);
   }, []);
@@ -96,10 +105,11 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setPerfil(null);
     setHotel(null);
+    setHoteles([]);
   }, []);
 
   const perfilListo = !session || perfilDe === session.user.id;
-  return <Ctx.Provider value={{ cargando, perfilListo, session, perfil, hotel, estadoPush, recargar, salir }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ cargando, perfilListo, session, perfil, hotel, hoteles, estadoPush, recargar, salir }}>{children}</Ctx.Provider>;
 }
 
 export function useSesion(): Sesion {

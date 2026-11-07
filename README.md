@@ -5,6 +5,7 @@ App de averías para hoteles: recepción y limpieza avisan (con foto) y el técn
 ```
 avisaya/
 ├── supabase/01_esquema.sql         ← base de datos (pegar en Supabase → SQL Editor)
+│                                     Si ya lo ejecutaste antes, vuelve a ejecutar 01, 02 y 03 en orden: se actualizan sin perder datos.
 ├── supabase/02_notificaciones.sql  ← avisos con el móvil bloqueado (pegar después del 01)
 ├── supabase/03_busqueda.sql        ← buscador de partes (pegar después del 01)
 └── movil/                    ← app para iPhone y Android (Expo / React Native)
@@ -88,7 +89,8 @@ npm install
 - Crear partes con habitación, tipo de avería, descripción, foto, prioridad y «no vender».
 - El técnico: **Voy para allá → He llegado, empiezo → Resuelto** (o «Falta una pieza»). **«Me lo quedo yo»** si otro técnico está más cerca.
 - Todo en tiempo real y aviso dentro de la app (con vibración) cuando llega algo.
-- Cada hotel solo ve sus datos.
+- **Varios hoteles por persona**: un técnico (o cualquiera) puede unirse a varios hoteles con sus códigos (Ajustes → Añadir otro hotel) y ve todos los partes juntos, con el nombre del hotel en cada tarjeta y en cada notificación, y un selector para ver uno solo.
+- Cada persona solo ve los hoteles a los que pertenece.
 - **Buscador**: por habitación, tipo de avería, texto, código (PT-…) o nombre, también en partes antiguos y sin necesidad de tildes. **Filtro por fecha** (hoy, ayer, 7 o 30 días, o un rango a elegir).
 - **Detalle de cada parte** con historial y tiempos, e **informe PDF** para guardar o enviar (WhatsApp, correo…).
 

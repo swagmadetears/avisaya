@@ -61,6 +61,7 @@ declare
   actor    uuid := auth.uid();
   donde    text := case when new.habitacion ~ '^\d{1,5}[a-zA-Z]?$' then 'Hab. ' || new.habitacion else new.habitacion end;
   tecnico  text;
+  hotel    text;
   titulo   text;
   cuerpo   text;
   destino  text;            -- 'tecnicos' o 'interesados'
@@ -102,13 +103,20 @@ begin
     into mensajes
     from public.dispositivos d
     join public.perfiles p on p.id = d.perfil_id
-   where p.hotel_id = new.hotel_id
-     and p.activo
+    join public.perfil_hoteles ph on ph.perfil_id = p.id and ph.hotel_id = new.hotel_id
+   where p.activo
      and d.perfil_id is distinct from actor           -- a quien hace el cambio no se le avisa
      and ((destino = 'tecnicos'    and p.rol = 'tecnico')
        or (destino = 'interesados' and (p.id = new.creado_por or p.rol in ('recepcion', 'admin'))));
 
+  -- Con varios hoteles, el aviso dice siempre de cuál es
   if mensajes is not null then
+    select nombre into hotel from public.hoteles where id = new.hotel_id;
+    select jsonb_agg(m || jsonb_build_object('title', coalesce(hotel, 'Avisaya') || ' · ' || (m->>'title'),
+                                             'data', (m->'data') || jsonb_build_object('hotel_id', new.hotel_id)))
+      into mensajes
+      from jsonb_array_elements(mensajes) m;
+
     begin
       perform net.http_post(
         url     := 'https://exp.host/--/api/v2/push/send',

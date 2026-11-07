@@ -77,6 +77,7 @@ export function Opcion({
   icono,
   tono = color.acento,
   vertical,
+  style,
 }: {
   activa: boolean;
   onPress: () => void;
@@ -84,6 +85,7 @@ export function Opcion({
   icono?: NombreIcono;
   tono?: string;
   vertical?: boolean;
+  style?: StyleProp<ViewStyle>;
 }) {
   return (
     <Pressable
@@ -94,6 +96,7 @@ export function Opcion({
         s.opcion,
         vertical && s.opcionVertical,
         activa && { borderColor: tono, backgroundColor: suave(tono, 0.09) },
+        style,
       ]}>
       {icono ? (
         <View style={[vertical ? s.opcionIcono : null, vertical && { backgroundColor: suave(tono, 0.15) }]}>

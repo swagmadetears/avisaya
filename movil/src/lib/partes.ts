@@ -9,10 +9,11 @@ export const CAMPOS =
 export type CambioParte = { tipo: 'nuevo' | 'estado'; parte: Parte; antes?: Estado };
 
 /**
- * Partes del hotel en tiempo real: abiertos + resueltos de los últimos 7 días.
+ * Partes de todos los hoteles de la persona, en tiempo real: abiertos + resueltos de los últimos 7 días.
+ * `hotelIds` son los ids separados por comas (texto, para que no cambie en cada render).
  * `alCambiar` se llama con los cambios que hace OTRA persona (para mostrar avisos).
  */
-export function usePartes(hotelId: string | undefined, alCambiar: (c: CambioParte) => void) {
+export function usePartes(hotelIds: string, alCambiar: (c: CambioParte) => void) {
   const [partes, setPartes] = useState<Parte[]>([]);
   const [perfiles, setPerfiles] = useState<Record<string, Perfil>>({});
   const [fotos, setFotos] = useState<Record<string, string>>({});
@@ -28,18 +29,19 @@ export function usePartes(hotelId: string | undefined, alCambiar: (c: CambioPart
   });
 
   const cargarPerfiles = useCallback(async () => {
-    if (!hotelId) return;
-    const { data } = await supabase.from('perfiles').select('id, hotel_id, nombre, rol, activo').eq('hotel_id', hotelId);
+    if (!hotelIds) return;
+    // Devuelve las personas que comparten algún hotel con quien pregunta
+    const { data } = await supabase.from('perfiles').select('id, hotel_id, nombre, rol, activo');
     if (data) setPerfiles(Object.fromEntries((data as Perfil[]).map((p) => [p.id, p])));
-  }, [hotelId]);
+  }, [hotelIds]);
 
   const cargar = useCallback(async () => {
-    if (!hotelId) return;
+    if (!hotelIds) return;
     const desde = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const { data, error: e } = await supabase
       .from('partes')
       .select(CAMPOS)
-      .eq('hotel_id', hotelId)
+      .in('hotel_id', hotelIds.split(','))
       .or(`estado.neq.resuelto,resuelto_en.gte.${desde}`)
       .order('creado_en', { ascending: false })
       .limit(300);
@@ -60,19 +62,19 @@ export function usePartes(hotelId: string | undefined, alCambiar: (c: CambioPart
       setPartes(lista);
     }
     setCargando(false);
-  }, [hotelId]);
+  }, [hotelIds]);
 
   // Carga inicial + tiempo real
   useEffect(() => {
-    if (!hotelId) return;
+    if (!hotelIds) return;
     conocidos.current = new Map();
     // Carga desde la red: los setState ocurren tras el await, no de forma síncrona.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarPerfiles();
     cargar();
     const canal = supabase
-      .channel(`partes-${hotelId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'partes', filter: `hotel_id=eq.${hotelId}` }, (pl) => {
+      .channel(`partes-${hotelIds}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'partes', filter: `hotel_id=in.(${hotelIds})` }, (pl) => {
         if (pl.eventType === 'DELETE') {
           const id = (pl.old as { id?: string }).id;
           if (id) setPartes((l) => l.filter((p) => p.id !== id));
@@ -100,7 +102,7 @@ export function usePartes(hotelId: string | undefined, alCambiar: (c: CambioPart
       supabase.removeChannel(canal);
       sub.remove();
     };
-  }, [hotelId, cargar, cargarPerfiles]);
+  }, [hotelIds, cargar, cargarPerfiles]);
 
   // Enlaces temporales para ver las fotos (el almacén es privado)
   useEffect(() => {
@@ -144,11 +146,12 @@ export async function subirFoto(hotelId: string, uri: string): Promise<string> {
 }
 
 /** Busca en todos los partes del hotel (también los antiguos) usando la base de datos. */
-export async function buscarPartes(texto: string, desde: Date | null, hasta: Date | null): Promise<Parte[]> {
+export async function buscarPartes(texto: string, desde: Date | null, hasta: Date | null, hotelId: string | null): Promise<Parte[]> {
   const { data, error } = await supabase.rpc('buscar_partes', {
     p_texto: texto.trim(),
     p_desde: desde ? desde.toISOString() : null,
     p_hasta: hasta ? hasta.toISOString() : null,
+    p_hotel: hotelId,
   });
   if (error) throw error;
   return (data ?? []) as Parte[];

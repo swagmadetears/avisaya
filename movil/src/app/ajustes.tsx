@@ -6,17 +6,23 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aviso, Boton, Campo } from '../components/ui';
 import { useSesion } from '../lib/sesion';
 import { mensajeError, supabase } from '../lib/supabase';
-import { color, fuente, ROLES, sombra } from '../lib/tema';
+import { color, fuente, ROLES, sombra, type Hotel } from '../lib/tema';
 
 export default function Ajustes() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { perfil, hotel, session, estadoPush, recargar, salir } = useSesion();
+  const { perfil, hotel, hoteles, session, estadoPush, recargar, salir } = useSesion();
   const [nombre, setNombre] = useState(perfil?.nombre ?? '');
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
   const [guardando, setGuardando] = useState(false);
   const [confirmarSalir, setConfirmarSalir] = useState(false);
+  const [modoNuevo, setModoNuevo] = useState<'codigo' | 'crear' | null>(null);
+  const [codigo, setCodigo] = useState('');
+  const [nombreHotel, setNombreHotel] = useState('');
+  const [errorHotel, setErrorHotel] = useState('');
+  const [msgHotel, setMsgHotel] = useState('');
+  const [anadiendo, setAnadiendo] = useState(false);
 
   if (!perfil || !hotel) return null;
 
@@ -32,10 +38,36 @@ export default function Ajustes() {
     setMsg('Guardado.');
   }
 
-  async function compartirCodigo() {
+  async function compartirCodigo(h: Hotel) {
     await Share.share({
-      message: `Únete a ${hotel!.nombre} en Avisaya.\n1. Descarga la app y crea tu cuenta.\n2. Elige «Tengo un código» y escribe: ${hotel!.codigo_union}`,
+      message: `Únete a ${h.nombre} en Avisaya.\n1. Descarga la app y crea tu cuenta.\n2. Elige «Tengo un código» y escribe: ${h.codigo_union}\n(Si ya usas Avisaya: Ajustes → Añadir otro hotel.)`,
     }).catch(() => {});
+  }
+
+  async function anadirHotel() {
+    setErrorHotel('');
+    setMsgHotel('');
+    setAnadiendo(true);
+    try {
+      if (modoNuevo === 'codigo') {
+        if (codigo.trim().length < 4) throw new Error('Escribe el código del hotel.');
+        const { error: e } = await supabase.rpc('unirse_hotel', { p_codigo: codigo.trim(), p_mi_nombre: perfil!.nombre, p_rol: perfil!.rol === 'admin' ? 'recepcion' : perfil!.rol });
+        if (e) throw e;
+      } else {
+        if (nombreHotel.trim().length < 2) throw new Error('Escribe el nombre del hotel.');
+        const { error: e } = await supabase.rpc('crear_hotel', { p_nombre_hotel: nombreHotel.trim(), p_mi_nombre: perfil!.nombre });
+        if (e) throw e;
+      }
+      await recargar();
+      setMsgHotel(modoNuevo === 'codigo' ? 'Hotel añadido. Ya ves sus partes.' : 'Hotel creado. Comparte su código con el equipo.');
+      setCodigo('');
+      setNombreHotel('');
+      setModoNuevo(null);
+    } catch (e) {
+      setErrorHotel(mensajeError(e));
+    } finally {
+      setAnadiendo(false);
+    }
   }
 
   return (
@@ -47,17 +79,51 @@ export default function Ajustes() {
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
-        <View style={s.codigoCaja}>
-          <Text style={s.codigoEtiqueta}>CÓDIGO PARA TU EQUIPO</Text>
-          <Text style={s.codigo} selectable>
-            {hotel.codigo_union}
-          </Text>
-          <Text style={s.codigoAyuda}>Cada persona crea su cuenta en la app, elige «Tengo un código» y escribe este código.</Text>
-          <Boton texto="Compartir código" icono="share-variant" tipo="principal" onPress={compartirCodigo} />
+        <Text style={s.seccion}>{hoteles.length > 1 ? `Tus hoteles (${hoteles.length})` : 'Tu hotel'}</Text>
+        {hoteles.map((h) => (
+          <View key={h.id} style={s.codigoCaja}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <MaterialCommunityIcons name="office-building-outline" size={20} color="#fff" />
+              <Text style={s.hotelNombre} numberOfLines={2}>
+                {h.nombre}
+              </Text>
+            </View>
+            <Text style={s.codigoEtiqueta}>CÓDIGO PARA EL EQUIPO</Text>
+            <Text style={s.codigo} selectable>
+              {h.codigo_union}
+            </Text>
+            <Boton texto="Compartir código" icono="share-variant" tipo="principal" onPress={() => compartirCodigo(h)} />
+          </View>
+        ))}
+        <Text style={s.ayuda}>Cada persona crea su cuenta, elige «Tengo un código» y escribe el código. Quien ya usa Avisaya lo añade aquí abajo.</Text>
+
+        <View style={s.tarjeta}>
+          {modoNuevo === null ? (
+            <View style={{ gap: 8 }}>
+              <Boton texto="Añadir otro hotel (tengo su código)" icono="plus" onPress={() => setModoNuevo('codigo')} />
+              {perfil.rol === 'admin' ? <Boton texto="Crear un hotel nuevo" icono="office-building-cog-outline" tipo="fantasma" onPress={() => setModoNuevo('crear')} /> : null}
+            </View>
+          ) : (
+            <>
+              {modoNuevo === 'codigo' ? (
+                <Campo etiqueta="Código del otro hotel" value={codigo} onChangeText={(t) => setCodigo(t.toUpperCase())} placeholder="A7F3K2" autoCapitalize="characters" autoCorrect={false} grande maxLength={10} />
+              ) : (
+                <Campo etiqueta="Nombre del hotel nuevo" value={nombreHotel} onChangeText={setNombreHotel} placeholder="Hotel Sol Playa" maxLength={80} />
+              )}
+              <Text style={s.ayuda}>
+                {modoNuevo === 'codigo' ? `Seguirás como ${ROLES[perfil.rol]} y verás los partes de todos tus hoteles juntos.` : 'Tendrá su propio código para invitar a su equipo.'}
+              </Text>
+              <Aviso texto={errorHotel} />
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <Boton texto="Cancelar" onPress={() => { setModoNuevo(null); setErrorHotel(''); }} style={{ flex: 1 }} />
+                <Boton texto={modoNuevo === 'codigo' ? 'Añadir' : 'Crear'} tipo="principal" onPress={anadirHotel} cargando={anadiendo} style={{ flex: 2 }} />
+              </View>
+            </>
+          )}
+          <Aviso texto={msgHotel} tono={color.ok} />
         </View>
 
         <View style={s.tarjeta}>
-          <Fila etiqueta="Hotel" valor={hotel.nombre} />
           <Fila etiqueta="Departamento" valor={ROLES[perfil.rol]} />
           <Fila etiqueta="Correo" valor={session?.user.email ?? ''} />
           <Fila etiqueta="Avisos con la app cerrada" valor={TEXTO_PUSH[estadoPush ?? 'no-disponible']} />
@@ -110,9 +176,12 @@ const s = StyleSheet.create({
   titulo: { flex: 1, fontFamily: fuente.titulo, fontSize: 21, color: color.tinta },
   cerrar: { width: 42, height: 42, borderRadius: 12, backgroundColor: color.elevado, alignItems: 'center', justifyContent: 'center' },
   tarjeta: { backgroundColor: color.superficie, borderRadius: 18, padding: 16, gap: 12, ...sombra },
-  codigoCaja: { backgroundColor: color.marca, borderRadius: 18, padding: 18, gap: 10 },
+  codigoCaja: { backgroundColor: color.marca, borderRadius: 18, padding: 16, gap: 8 },
+  seccion: { fontFamily: fuente.titulo, fontSize: 16, color: color.tinta, marginBottom: -4 },
+  hotelNombre: { flex: 1, fontFamily: fuente.titulo, fontSize: 17, color: '#fff' },
+  ayuda: { fontFamily: fuente.texto, fontSize: 13.5, color: color.apagado, lineHeight: 19 },
   codigoEtiqueta: { fontFamily: fuente.textoFuerte, fontSize: 12, letterSpacing: 1, color: 'rgba(255,255,255,0.75)' },
-  codigo: { fontFamily: fuente.numero, fontSize: 38, letterSpacing: 6, color: '#fff' },
+  codigo: { fontFamily: fuente.numero, fontSize: 32, letterSpacing: 6, color: '#fff' },
   codigoAyuda: { fontFamily: fuente.texto, fontSize: 14, color: 'rgba(255,255,255,0.85)', lineHeight: 20 },
   fila: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   filaEtiqueta: { fontFamily: fuente.textoMedio, fontSize: 14, color: color.apagado },
