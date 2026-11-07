@@ -144,8 +144,12 @@ export async function subirFoto(hotelId: string, uri: string): Promise<string> {
 }
 
 /** Busca en todos los partes del hotel (también los antiguos) usando la base de datos. */
-export async function buscarPartes(texto: string): Promise<Parte[]> {
-  const { data, error } = await supabase.rpc('buscar_partes', { p_texto: texto.trim() });
+export async function buscarPartes(texto: string, desde: Date | null, hasta: Date | null): Promise<Parte[]> {
+  const { data, error } = await supabase.rpc('buscar_partes', {
+    p_texto: texto.trim(),
+    p_desde: desde ? desde.toISOString() : null,
+    p_hasta: hasta ? hasta.toISOString() : null,
+  });
   if (error) throw error;
   return (data ?? []) as Parte[];
 }

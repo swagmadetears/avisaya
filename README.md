@@ -89,7 +89,7 @@ npm install
 - El técnico: **Voy para allá → He llegado, empiezo → Resuelto** (o «Falta una pieza»). **«Me lo quedo yo»** si otro técnico está más cerca.
 - Todo en tiempo real y aviso dentro de la app (con vibración) cuando llega algo.
 - Cada hotel solo ve sus datos.
-- **Buscador**: por habitación, tipo de avería, texto, código (PT-…) o nombre, también en partes antiguos y sin necesidad de tildes.
+- **Buscador**: por habitación, tipo de avería, texto, código (PT-…) o nombre, también en partes antiguos y sin necesidad de tildes. **Filtro por fecha** (hoy, ayer, 7 o 30 días, o un rango a elegir).
 - **Detalle de cada parte** con historial y tiempos, e **informe PDF** para guardar o enviar (WhatsApp, correo…).
 
 ## Notificaciones con el móvil bloqueado

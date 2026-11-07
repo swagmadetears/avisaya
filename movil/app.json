@@ -59,7 +59,8 @@
           "defaultChannel": "partes"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "avisaya"
   }

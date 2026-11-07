@@ -4,9 +4,11 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FiltroFecha } from '../components/FiltroFecha';
 import { Notificacion, type NotificacionRef } from '../components/Notificacion';
 import { ParteTarjeta, type Accion } from '../components/ParteTarjeta';
 import { Aviso, Boton } from '../components/ui';
+import { dentroDe, limites, SIN_FECHA, textoRango, type Rango } from '../lib/fechas';
 import { codigoParte } from '../lib/informe';
 import { buscarPartes, usePartes, type CambioParte } from '../lib/partes';
 import { useSesion } from '../lib/sesion';
@@ -27,20 +29,27 @@ export default function Inicio() {
   const [resolviendo, setResolviendo] = useState<Parte | null>(null);
   const [nota, setNota] = useState('');
   const [busqueda, setBusqueda] = useState('');
-  const [remotos, setRemotos] = useState<{ texto: string; partes: Parte[] } | null>(null);
+  const [rango, setRango] = useState<Rango>(SIN_FECHA);
+  const [remotos, setRemotos] = useState<{ clave: string; partes: Parte[] } | null>(null);
   const [errorBusqueda, setErrorBusqueda] = useState('');
   const textoBusqueda = busqueda.trim();
-  const buscandoActivo = textoBusqueda.length >= 2;
+  const hayTexto = textoBusqueda.length >= 2;
+  const hayFecha = rango.tipo !== 'todas';
+  const buscandoActivo = hayTexto || hayFecha;
+  const lim = limites(rango);
+  const desdeMs = lim.desde?.getTime() ?? null;
+  const hastaMs = lim.hasta?.getTime() ?? null;
+  const claveBusqueda = `${hayTexto ? textoBusqueda : ''}|${desdeMs ?? ''}|${hastaMs ?? ''}`;
 
   // Busca también en partes antiguos (en la base de datos), medio segundo después de dejar de escribir
   useEffect(() => {
-    if (textoBusqueda.length < 2) return;
+    if (!buscandoActivo) return;
     let vivo = true;
     const t = setTimeout(async () => {
       try {
-        const r = await buscarPartes(textoBusqueda);
+        const r = await buscarPartes(hayTexto ? textoBusqueda : '', desdeMs === null ? null : new Date(desdeMs), hastaMs === null ? null : new Date(hastaMs));
         if (vivo) {
-          setRemotos({ texto: textoBusqueda, partes: r });
+          setRemotos({ clave: claveBusqueda, partes: r });
           setErrorBusqueda('');
         }
       } catch {
@@ -51,7 +60,7 @@ export default function Inicio() {
       vivo = false;
       clearTimeout(t);
     };
-  }, [textoBusqueda]);
+  }, [buscandoActivo, hayTexto, textoBusqueda, desdeMs, hastaMs, claveBusqueda]);
 
   const yoRef = useRef(perfil);
   useEffect(() => {
@@ -150,12 +159,13 @@ export default function Inicio() {
     const q = normalizar(textoBusqueda);
     const nombre = (id: string | null) => (id ? perfiles[id]?.nombre ?? '' : '');
     const coincide = (p: Parte) =>
-      normalizar([p.habitacion, p.categoria, p.descripcion, p.nota_resolucion, codigoParte(p), nombre(p.creado_por), nombre(p.tecnico_id)].join(' ')).includes(q);
+      (!hayTexto || normalizar([p.habitacion, p.categoria, p.descripcion, p.nota_resolucion, codigoParte(p), nombre(p.creado_por), nombre(p.tecnico_id)].join(' ')).includes(q)) &&
+      dentroDe(p.creado_en, rango);
     const mapa = new Map<string, Parte>();
-    if (remotos && remotos.texto === textoBusqueda) for (const p of remotos.partes) mapa.set(p.id, p);
+    if (remotos && remotos.clave === claveBusqueda) for (const p of remotos.partes) mapa.set(p.id, p);
     for (const p of partes) if (coincide(p)) mapa.set(p.id, p);
     return [...mapa.values()].sort((a, b) => b.creado_en.localeCompare(a.creado_en));
-  }, [buscandoActivo, textoBusqueda, remotos, partes, perfiles]);
+  }, [buscandoActivo, hayTexto, textoBusqueda, rango, remotos, claveBusqueda, partes, perfiles]);
 
   const resumen: { icono: NombreIcono; texto: string; n: number; tono: string; filtro: string }[] = esTecnico
     ? [
@@ -267,10 +277,14 @@ export default function Inicio() {
         ) : null}
       </View>
 
+      <FiltroFecha valor={rango} onCambio={setRango} />
+
       {buscandoActivo ? (
         <Text style={s.resultadosTexto}>
-          {resultados.length === 1 ? '1 parte' : `${resultados.length} partes`} con «{textoBusqueda}»
-          {remotos?.texto !== textoBusqueda && !errorBusqueda ? ' · buscando en los antiguos…' : ''}
+          {resultados.length === 1 ? '1 parte' : `${resultados.length} partes`}
+          {hayTexto ? ` con «${textoBusqueda}»` : ''}
+          {hayFecha ? ` · ${textoRango(rango)}` : ''}
+          {remotos?.clave !== claveBusqueda && !errorBusqueda ? ' · buscando en los antiguos…' : ''}
         </Text>
       ) : null}
       <Aviso texto={buscandoActivo ? errorBusqueda : ''} />
