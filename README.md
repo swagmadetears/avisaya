@@ -25,7 +25,7 @@ cd $HOME\Documents
 ```
 
 ```bash
-git clone https://github.com/swagmadetears/avisaya.git
+git clone -b primera-version https://github.com/swagmadetears/avisaya.git
 ```
 
 ```bash
