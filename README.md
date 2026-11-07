@@ -18,7 +18,17 @@ avisaya/
 - En el móvil, la app **Expo Go** (App Store o Google Play).
 
 ### 2. Descargar el código (solo la primera vez)
-Abre **PowerShell** (botón Inicio → escribe «PowerShell») y pega:
+Abre **PowerShell** (botón Inicio → escribe «PowerShell»).
+
+Primero permite que PowerShell ejecute `npm` (solo una vez; si pregunta, responde `S`):
+
+```bash
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+Si no te deja (PC de empresa), usa `npm.cmd` y `npx.cmd` en lugar de `npm` y `npx` en todos los comandos.
+
+Después pega:
 
 ```bash
 cd $HOME\Documents
