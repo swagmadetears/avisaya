@@ -29,6 +29,7 @@ type Props = {
   ocupado: boolean;
   onAccion: (p: Parte, a: Accion) => void;
   onFoto: (url: string) => void;
+  onDetalle: (p: Parte) => void;
 };
 
 function PasoBarra({ parte }: { parte: Parte }) {
@@ -80,7 +81,7 @@ function acciones(p: Parte, yo: Perfil): { a: Accion; texto: string; tipo: 'prin
   }
 }
 
-function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onFoto }: Props) {
+function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onFoto, onDetalle }: Props) {
   const cat = categoria(p.categoria);
   const abierto = p.estado !== 'resuelto';
   const hab = esHabitacion(p.habitacion);
@@ -149,6 +150,11 @@ function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onF
           ))}
         </View>
       ) : null}
+      <Pressable onPress={() => onDetalle(p)} style={s.detalle} accessibilityRole="button" accessibilityLabel="Ver detalle e informe PDF">
+        <MaterialCommunityIcons name="file-document-outline" size={17} color={color.marca2} />
+        <Text style={s.detalleTexto}>Detalle e informe PDF</Text>
+        <MaterialCommunityIcons name="chevron-right" size={18} color={color.apagado} />
+      </Pressable>
     </View>
   );
 }
@@ -193,4 +199,6 @@ const s = StyleSheet.create({
   tarde: { color: color.pendiente, fontFamily: fuente.textoFuerte },
   nota: { fontFamily: fuente.texto, fontSize: 14, color: color.tinta, backgroundColor: suave(color.ok, 0.12), borderRadius: 10, padding: 10 },
   acciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  detalle: { flexDirection: 'row', alignItems: 'center', gap: 8, borderTopWidth: 1, borderTopColor: color.linea, paddingTop: 10, marginTop: -2 },
+  detalleTexto: { flex: 1, fontFamily: fuente.textoFuerte, fontSize: 14, color: color.marca2 },
 });

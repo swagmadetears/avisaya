@@ -158,6 +158,8 @@ export default function Inicio() {
     [perfil, actualizar],
   );
 
+  const abrirDetalle = useCallback((p: Parte) => router.push(`/parte/${p.id}`), [router]);
+
   async function confirmarResuelto() {
     if (!resolviendo || !perfil) return;
     setOcupado(resolviendo.id);
@@ -247,7 +249,7 @@ export default function Inicio() {
         ListEmptyComponent={cargando ? undefined : <Text style={s.vacio}>{vacio}</Text>}
         refreshControl={<RefreshControl refreshing={false} onRefresh={recargar} tintColor={color.marca} />}
         renderItem={({ item }) => (
-          <ParteTarjeta parte={item} yo={perfil} perfiles={perfiles} foto={item.foto_path ? fotos[item.foto_path] : undefined} ocupado={ocupado === item.id} onAccion={hacer} onFoto={setFotoGrande} />
+          <ParteTarjeta parte={item} yo={perfil} perfiles={perfiles} foto={item.foto_path ? fotos[item.foto_path] : undefined} ocupado={ocupado === item.id} onAccion={hacer} onFoto={setFotoGrande} onDetalle={abrirDetalle} />
         )}
       />
 

@@ -58,7 +58,8 @@
           "color": "#E4561B",
           "defaultChannel": "partes"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "scheme": "avisaya"
   }

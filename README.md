@@ -88,6 +88,7 @@ npm install
 - El técnico: **Voy para allá → He llegado, empiezo → Resuelto** (o «Falta una pieza»). **«Me lo quedo yo»** si otro técnico está más cerca.
 - Todo en tiempo real y aviso dentro de la app (con vibración) cuando llega algo.
 - Cada hotel solo ve sus datos.
+- **Detalle de cada parte** con historial y tiempos, e **informe PDF** para guardar o enviar (WhatsApp, correo…).
 
 ## Notificaciones con el móvil bloqueado
 - Base de datos: ejecutar `supabase/02_notificaciones.sql` en el SQL Editor.

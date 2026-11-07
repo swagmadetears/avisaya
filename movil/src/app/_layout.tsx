@@ -54,6 +54,7 @@ export default function Layout() {
           <Stack.Screen name="entrar" />
           <Stack.Screen name="hotel" />
           <Stack.Screen name="inicio" />
+          <Stack.Screen name="parte/[id]" />
           <Stack.Screen name="nuevo" options={{ presentation: 'modal' }} />
           <Stack.Screen name="ajustes" options={{ presentation: 'modal' }} />
         </Stack>

@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { supabase } from './supabase';
 import type { Estado, Parte, Perfil } from './tema';
 
-const CAMPOS =
+export const CAMPOS =
   'id, hotel_id, habitacion, categoria, descripcion, prioridad, bloquea, estado, tecnico_id, creado_por, foto_path, nota_resolucion, creado_en, actualizado_en, cambio_estado_en, resuelto_en';
 
 export type CambioParte = { tipo: 'nuevo' | 'estado'; parte: Parte; antes?: Estado };
