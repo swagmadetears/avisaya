@@ -7,9 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Notificacion, type NotificacionRef } from '../components/Notificacion';
 import { ParteTarjeta, type Accion } from '../components/ParteTarjeta';
 import { Aviso, Boton } from '../components/ui';
-import { usePartes, type CambioParte } from '../lib/partes';
+import { codigoParte } from '../lib/informe';
+import { buscarPartes, usePartes, type CambioParte } from '../lib/partes';
 import { useSesion } from '../lib/sesion';
-import { color, esHabitacion, esHoy, fuente, ROLES, sombra, suave, type NombreIcono, type Parte } from '../lib/tema';
+import { color, esHabitacion, esHoy, fuente, normalizar, ROLES, sombra, suave, type NombreIcono, type Parte } from '../lib/tema';
 
 const PRIO = { urgente: 0, normal: 1, baja: 2 } as const;
 const ORDEN = { en_camino: 0, en_curso: 1, pendiente: 2, esperando: 3, resuelto: 4 } as const;
@@ -25,6 +26,32 @@ export default function Inicio() {
   const [fotoGrande, setFotoGrande] = useState<string | null>(null);
   const [resolviendo, setResolviendo] = useState<Parte | null>(null);
   const [nota, setNota] = useState('');
+  const [busqueda, setBusqueda] = useState('');
+  const [remotos, setRemotos] = useState<{ texto: string; partes: Parte[] } | null>(null);
+  const [errorBusqueda, setErrorBusqueda] = useState('');
+  const textoBusqueda = busqueda.trim();
+  const buscandoActivo = textoBusqueda.length >= 2;
+
+  // Busca también en partes antiguos (en la base de datos), medio segundo después de dejar de escribir
+  useEffect(() => {
+    if (textoBusqueda.length < 2) return;
+    let vivo = true;
+    const t = setTimeout(async () => {
+      try {
+        const r = await buscarPartes(textoBusqueda);
+        if (vivo) {
+          setRemotos({ texto: textoBusqueda, partes: r });
+          setErrorBusqueda('');
+        }
+      } catch {
+        if (vivo) setErrorBusqueda('No se ha podido buscar en los partes antiguos. Se muestran solo los recientes.');
+      }
+    }, 450);
+    return () => {
+      vivo = false;
+      clearTimeout(t);
+    };
+  }, [textoBusqueda]);
 
   const yoRef = useRef(perfil);
   useEffect(() => {
@@ -117,6 +144,19 @@ export default function Inicio() {
     });
   }, [partes, filtroActivo, rol, esTecnico, yoId]);
 
+  // Resultados de búsqueda: los recientes al instante + los antiguos de la base de datos
+  const resultados = useMemo(() => {
+    if (!buscandoActivo) return [];
+    const q = normalizar(textoBusqueda);
+    const nombre = (id: string | null) => (id ? perfiles[id]?.nombre ?? '' : '');
+    const coincide = (p: Parte) =>
+      normalizar([p.habitacion, p.categoria, p.descripcion, p.nota_resolucion, codigoParte(p), nombre(p.creado_por), nombre(p.tecnico_id)].join(' ')).includes(q);
+    const mapa = new Map<string, Parte>();
+    if (remotos && remotos.texto === textoBusqueda) for (const p of remotos.partes) mapa.set(p.id, p);
+    for (const p of partes) if (coincide(p)) mapa.set(p.id, p);
+    return [...mapa.values()].sort((a, b) => b.creado_en.localeCompare(a.creado_en));
+  }, [buscandoActivo, textoBusqueda, remotos, partes, perfiles]);
+
   const resumen: { icono: NombreIcono; texto: string; n: number; tono: string; filtro: string }[] = esTecnico
     ? [
         { icono: 'inbox', texto: 'Sin asignar', n: abiertos.filter((p) => !p.tecnico_id).length, tono: color.pendiente, filtro: 'cola' },
@@ -208,7 +248,34 @@ export default function Inicio() {
         </Text>
       ) : null}
 
-      <View style={s.chips}>
+      <View style={s.buscador}>
+        <MaterialCommunityIcons name="magnify" size={20} color={color.apagado} />
+        <TextInput
+          value={busqueda}
+          onChangeText={setBusqueda}
+          placeholder="Buscar: habitación, avería, código, nombre…"
+          placeholderTextColor={color.apagado}
+          style={s.buscadorInput}
+          returnKeyType="search"
+          autoCorrect={false}
+          accessibilityLabel="Buscar partes"
+        />
+        {busqueda ? (
+          <Pressable onPress={() => setBusqueda('')} accessibilityRole="button" accessibilityLabel="Borrar búsqueda" hitSlop={10}>
+            <MaterialCommunityIcons name="close-circle" size={20} color={color.apagado} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {buscandoActivo ? (
+        <Text style={s.resultadosTexto}>
+          {resultados.length === 1 ? '1 parte' : `${resultados.length} partes`} con «{textoBusqueda}»
+          {remotos?.texto !== textoBusqueda && !errorBusqueda ? ' · buscando en los antiguos…' : ''}
+        </Text>
+      ) : null}
+      <Aviso texto={buscandoActivo ? errorBusqueda : ''} />
+
+      {!buscandoActivo ? <View style={s.chips}>
         {filtros.map(([k, t, n]) => (
           <Pressable key={k} onPress={() => setFiltro(k)} style={[s.chip, filtroActivo === k && s.chipActivo]} accessibilityRole="tab" accessibilityState={{ selected: filtroActivo === k }}>
             <Text style={[s.chipTexto, filtroActivo === k && { color: '#fff' }]}>
@@ -217,7 +284,7 @@ export default function Inicio() {
             </Text>
           </Pressable>
         ))}
-      </View>
+      </View> : null}
       <Aviso texto={error ?? errorAccion} />
     </View>
   );
@@ -242,11 +309,12 @@ export default function Inicio() {
       </View>
 
       <FlatList
-        data={lista}
+        data={buscandoActivo ? resultados : lista}
         keyExtractor={(p) => p.id}
         contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: insets.bottom + 32 }}
         ListHeaderComponent={cabeceraLista}
-        ListEmptyComponent={cargando ? undefined : <Text style={s.vacio}>{vacio}</Text>}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={cargando ? undefined : <Text style={s.vacio}>{buscandoActivo ? 'No hay partes que coincidan con la búsqueda.' : vacio}</Text>}
         refreshControl={<RefreshControl refreshing={false} onRefresh={recargar} tintColor={color.marca} />}
         renderItem={({ item }) => (
           <ParteTarjeta parte={item} yo={perfil} perfiles={perfiles} foto={item.foto_path ? fotos[item.foto_path] : undefined} ocupado={ocupado === item.id} onAccion={hacer} onFoto={setFotoGrande} onDetalle={abrirDetalle} />
@@ -303,6 +371,9 @@ const s = StyleSheet.create({
   bloqueadas: { fontFamily: fuente.textoMedio, fontSize: 13.5, color: color.apagado },
   bloqueadasNums: { fontFamily: fuente.numero, color: color.pendiente },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  buscador: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea, borderRadius: 14, paddingHorizontal: 12 },
+  buscadorInput: { flex: 1, fontFamily: fuente.texto, fontSize: 15.5, color: color.tinta, paddingVertical: 11 },
+  resultadosTexto: { fontFamily: fuente.textoMedio, fontSize: 13.5, color: color.apagado },
   chip: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea },
   chipActivo: { backgroundColor: color.marca, borderColor: color.marca },
   chipTexto: { fontFamily: fuente.textoFuerte, fontSize: 14, color: color.tinta },

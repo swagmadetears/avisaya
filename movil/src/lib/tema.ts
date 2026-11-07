@@ -116,3 +116,10 @@ export function duracion(iso: string | null): string {
 }
 export const esHoy = (iso: string | null) => !!iso && new Date(iso).toDateString() === new Date().toDateString();
 export const esHabitacion = (h: string) => /^\d{1,5}[a-zA-Z]?$/.test(h.trim());
+
+/** Texto en minúsculas y sin tildes, para buscar «fontaneria» y encontrar «Fontanería». */
+export const normalizar = (t: string) =>
+  t
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
