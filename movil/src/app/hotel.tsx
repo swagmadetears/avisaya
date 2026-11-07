@@ -95,7 +95,8 @@ export default function Hotel() {
             <Campo etiqueta="Tu nombre" value={nombre} onChangeText={setNombre} placeholder="Ej. Lucía" autoComplete="given-name" maxLength={40} />
             {modo === 'crear' ? <Text style={s.nota}>Quedarás como administrador y verás el código para invitar a tu equipo.</Text> : null}
             <Aviso texto={error} />
-            <Boton texto={modo === 'unirse' ? 'Unirme' : 'Crear hotel'} tipo="principal" grande onPress={enviar} cargando={cargando} />
+            {modo === 'unirse' ? <Text style={s.nota}>Administración de tu hotel recibirá tu solicitud y tendrá que aprobarla antes de que puedas entrar.</Text> : null}
+            <Boton texto={modo === 'unirse' ? 'Enviar solicitud' : 'Crear hotel'} tipo="principal" grande onPress={enviar} cargando={cargando} />
           </View>
           <Text style={s.nota}>Has entrado como {session?.user.email}.</Text>
           <Boton texto="Cerrar sesión" tipo="fantasma" onPress={salir} />

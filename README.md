@@ -93,7 +93,8 @@ npm install
 - Cada persona solo ve los hoteles a los que pertenece.
 - **Cambio rápido de hotel**: tocando el nombre del hotel arriba; la app recuerda el último elegido.
 - **Equipo** (solo administración, en Ajustes): cambiar el departamento de cada persona, darle o quitarle hoteles, nombrar más administradores y desactivar cuentas sin borrar su historial.
-- **¿Olvidaste tu contraseña?** con un código por correo.
+- **¿Olvidaste tu contraseña?** en tres pasos: correo → código → pantalla de contraseña nueva.
+- **Solicitudes de acceso**: quien se registra con el código de un hotel queda pendiente; administración recibe un aviso y lo aprueba (eligiendo su departamento) o lo rechaza en Ajustes → Equipo.
 - **Buscador**: por habitación, tipo de avería, texto, código (PT-…) o nombre, también en partes antiguos y sin necesidad de tildes. **Filtro por fecha** (hoy, ayer, 7 o 30 días, o un rango a elegir).
 - **Detalle de cada parte** con historial y tiempos, e **informe PDF** para guardar o enviar (WhatsApp, correo…).
 
@@ -104,7 +105,7 @@ En Supabase → **Authentication → Emails → Reset password**, añade el cód
 <p>Tu código para cambiar la contraseña de Avisaya es: <b>{{ .Token }}</b></p>
 ```
 
-En la app: «¿Olvidaste tu contraseña?» → correo → código → contraseña nueva.
+En la app: «¿Olvidaste tu contraseña?» → correo → código → pantalla para la contraseña nueva.
 
 ## Notificaciones con el móvil bloqueado
 - Base de datos: ejecutar `supabase/02_notificaciones.sql` en el SQL Editor.

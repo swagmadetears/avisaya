@@ -13,17 +13,34 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 /** Lleva a cada persona a la pantalla que le toca según su sesión y su hotel. */
 function Guardian() {
-  const { cargando, perfilListo, session, perfil } = useSesion();
+  const { cargando, perfilListo, session, perfil, hoteles, solicitudes, recuperando } = useSesion();
   const segmentos = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    if (cargando || !perfilListo) return;
+    if (cargando) return;
     const actual = segmentos[0] ?? '';
-    const destino = !session ? 'entrar' : !perfil ? 'hotel' : !perfil.activo ? 'desactivada' : null;
+    // Recuperando la contraseña: primero hay que poner la nueva
+    if (session && recuperando) {
+      if (actual !== 'nueva-clave') router.replace('/nueva-clave');
+      return;
+    }
+    if (!perfilListo) return;
+    const destino = !session
+      ? 'entrar'
+      : !perfil
+        ? 'hotel'
+        : !perfil.activo
+          ? 'desactivada'
+          : !hoteles.length
+            ? solicitudes.length
+              ? 'pendiente'
+              : 'hotel'
+            : null;
+    const deEntrada = ['entrar', 'hotel', 'desactivada', 'pendiente', 'nueva-clave', ''];
     if (destino && actual !== destino) router.replace(`/${destino}`);
-    else if (!destino && (actual === 'entrar' || actual === 'hotel' || actual === 'desactivada' || actual === '')) router.replace('/inicio');
-  }, [cargando, perfilListo, session, perfil, segmentos, router]);
+    else if (!destino && deEntrada.includes(actual)) router.replace('/inicio');
+  }, [cargando, perfilListo, session, perfil, hoteles.length, solicitudes.length, recuperando, segmentos, router]);
 
   return null;
 }
@@ -59,6 +76,8 @@ export default function Layout() {
           <Stack.Screen name="ajustes" options={{ presentation: 'modal' }} />
           <Stack.Screen name="equipo" />
           <Stack.Screen name="desactivada" />
+          <Stack.Screen name="pendiente" />
+          <Stack.Screen name="nueva-clave" />
         </Stack>
       </SesionProvider>
     </SafeAreaProvider>

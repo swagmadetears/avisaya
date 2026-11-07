@@ -14,6 +14,11 @@ type Sesion = {
   hotel: Hotel | null;
   /** Todos los hoteles en los que trabaja (ordenados por nombre) */
   hoteles: Hotel[];
+  /** Solicitudes de acceso que esperan aprobación de administración */
+  solicitudes: { hotel_id: string; hotel: string }[];
+  /** true mientras se recupera la contraseña: hay que poner una nueva antes de seguir */
+  recuperando: boolean;
+  setRecuperando: (v: boolean) => void;
   /** Si este móvil recibe avisos con la app cerrada */
   estadoPush: EstadoPush | null;
   recargar: () => Promise<void>;
@@ -28,6 +33,8 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [hoteles, setHoteles] = useState<Hotel[]>([]);
+  const [solicitudes, setSolicitudes] = useState<{ hotel_id: string; hotel: string }[]>([]);
+  const [recuperando, setRecuperando] = useState(false);
   const [perfilDe, setPerfilDe] = useState<string | null>(null);
   const [estadoPush, setEstadoPush] = useState<EstadoPush | null>(null);
   const tokenPush = useRef<string | undefined>(undefined);
@@ -37,6 +44,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
       setPerfil(null);
       setHotel(null);
       setHoteles([]);
+      setSolicitudes([]);
       setPerfilDe(null);
       return;
     }
@@ -44,13 +52,18 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     setPerfil((p as Perfil | null) ?? null);
     if (p) {
       // La seguridad de la base de datos devuelve solo los hoteles de esta persona
-      const { data: hs } = await supabase.from('hoteles').select('id, nombre, codigo_union').order('nombre');
+      const [{ data: hs }, { data: sol }] = await Promise.all([
+        supabase.from('hoteles').select('id, nombre, codigo_union').order('nombre'),
+        supabase.rpc('mis_solicitudes'),
+      ]);
       const lista = (hs ?? []) as Hotel[];
+      setSolicitudes((sol ?? []) as { hotel_id: string; hotel: string }[]);
       setHoteles(lista);
       setHotel(lista.find((h) => h.id === p.hotel_id) ?? lista[0] ?? null);
     } else {
       setHotel(null);
       setHoteles([]);
+      setSolicitudes([]);
     }
     setPerfilDe(uid);
   }, []);
@@ -106,10 +119,12 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     setPerfil(null);
     setHotel(null);
     setHoteles([]);
+    setSolicitudes([]);
+    setRecuperando(false);
   }, []);
 
   const perfilListo = !session || perfilDe === session.user.id;
-  return <Ctx.Provider value={{ cargando, perfilListo, session, perfil, hotel, hoteles, estadoPush, recargar, salir }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ cargando, perfilListo, session, perfil, hotel, hoteles, solicitudes, recuperando, setRecuperando, estadoPush, recargar, salir }}>{children}</Ctx.Provider>;
 }
 
 export function useSesion(): Sesion {

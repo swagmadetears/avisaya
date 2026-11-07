@@ -103,7 +103,7 @@ begin
     into mensajes
     from public.dispositivos d
     join public.perfiles p on p.id = d.perfil_id
-    join public.perfil_hoteles ph on ph.perfil_id = p.id and ph.hotel_id = new.hotel_id
+    join public.perfil_hoteles ph on ph.perfil_id = p.id and ph.hotel_id = new.hotel_id and ph.aprobado
    where p.activo
      and d.perfil_id is distinct from actor           -- a quien hace el cambio no se le avisa
      and ((destino = 'tecnicos'    and p.rol = 'tecnico')
@@ -134,5 +134,51 @@ end $$;
 drop trigger if exists partes_push on public.partes;
 create trigger partes_push after insert or update on public.partes
   for each row execute function public.avisar_push();
+
+-- ---------- Aviso a administración: nueva solicitud de acceso ---------
+
+create or replace function public.avisar_solicitud() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  quien    text;
+  dept     text;
+  hotel    text;
+  mensajes jsonb;
+begin
+  if new.aprobado then return null; end if;
+  select nombre, rol into quien, dept from public.perfiles where id = new.perfil_id;
+  select nombre into hotel from public.hoteles where id = new.hotel_id;
+  dept := case dept when 'recepcion' then 'Recepción' when 'limpieza' then 'Limpieza'
+                    when 'tecnico' then 'Técnico' when 'admin' then 'Administración' else dept end;
+  select jsonb_agg(jsonb_build_object(
+           'to', d.token,
+           'title', coalesce(hotel, 'Avisaya') || ' · Solicitud de acceso',
+           'body', coalesce(quien, 'Alguien') || ' (' || coalesce(dept, '') || ') quiere entrar. Revísalo en Ajustes → Equipo.',
+           'sound', 'default',
+           'priority', 'high',
+           'channelId', 'partes',
+           'data', jsonb_build_object('tipo', 'solicitud', 'hotel_id', new.hotel_id)))
+    into mensajes
+    from public.dispositivos d
+    join public.perfiles p on p.id = d.perfil_id
+    join public.perfil_hoteles ph on ph.perfil_id = p.id and ph.hotel_id = new.hotel_id and ph.aprobado
+   where p.activo and p.rol = 'admin';
+  if mensajes is not null then
+    begin
+      perform net.http_post(
+        url     := 'https://exp.host/--/api/v2/push/send',
+        body    := mensajes,
+        headers := '{"Content-Type": "application/json", "Accept": "application/json"}'::jsonb
+      );
+    exception when others then
+      raise warning 'Avisaya: no se pudo enviar el aviso de solicitud: %', sqlerrm;
+    end;
+  end if;
+  return null;
+end $$;
+
+drop trigger if exists solicitud_push on public.perfil_hoteles;
+create trigger solicitud_push after insert on public.perfil_hoteles
+  for each row execute function public.avisar_solicitud();
 
 select 'Avisaya: notificaciones preparadas' as resultado;

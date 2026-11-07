@@ -72,6 +72,13 @@ insert into public.perfil_hoteles(perfil_id, hotel_id)
 select id, hotel_id from public.perfiles
 on conflict do nothing;
 
+-- Solicitudes de acceso: quien entra con un código queda pendiente hasta que
+-- administración lo aprueba. Quien ya estaba dentro antes de este cambio queda aprobado.
+alter table public.perfil_hoteles add column if not exists aprobado boolean;
+update public.perfil_hoteles set aprobado = true where aprobado is null;
+alter table public.perfil_hoteles alter column aprobado set default false;
+alter table public.perfil_hoteles alter column aprobado set not null;
+
 -- ---------- Funciones de ayuda ----------------------------------------
 
 -- Hotel principal de quien hace la petición
@@ -91,7 +98,7 @@ language sql stable security definer set search_path = public as $$
   select ph.hotel_id
     from public.perfil_hoteles ph
     join public.perfiles p on p.id = ph.perfil_id
-   where ph.perfil_id = auth.uid() and p.activo
+   where ph.perfil_id = auth.uid() and p.activo and ph.aprobado
 $$;
 
 -- ¿Quien hace la petición trabaja en este hotel?
@@ -104,13 +111,13 @@ $$;
 create or replace function public.comparte_hotel(p_perfil uuid) returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (select 1 from public.perfil_hoteles ph
-                  where ph.perfil_id = p_perfil and ph.hotel_id in (select public.mis_hoteles()))
+                  where ph.perfil_id = p_perfil and ph.aprobado and ph.hotel_id in (select public.mis_hoteles()))
 $$;
 
 -- ¿Esta persona trabaja en este hotel?
 create or replace function public.perfil_en_hotel(p_perfil uuid, p_hotel uuid) returns boolean
 language sql stable security definer set search_path = public as $$
-  select exists (select 1 from public.perfil_hoteles where perfil_id = p_perfil and hotel_id = p_hotel)
+  select exists (select 1 from public.perfil_hoteles where perfil_id = p_perfil and hotel_id = p_hotel and aprobado)
 $$;
 
 -- Crear un hotel nuevo. Una persona nueva queda como administración.
@@ -129,12 +136,14 @@ begin
   if not ya_existe then
     insert into public.perfiles(id, hotel_id, nombre, rol) values (auth.uid(), h.id, trim(p_mi_nombre), 'admin');
   end if;
-  insert into public.perfil_hoteles(perfil_id, hotel_id) values (auth.uid(), h.id) on conflict do nothing;
+  insert into public.perfil_hoteles(perfil_id, hotel_id, aprobado) values (auth.uid(), h.id, true)
+  on conflict (perfil_id, hotel_id) do update set aprobado = true;
   return h;
 end $$;
 
--- Unirse a un hotel con su código. Si la persona ya tiene cuenta, se añade
--- ese hotel a los suyos (mantiene su nombre y su departamento).
+-- Pedir acceso a un hotel con su código. La solicitud queda pendiente hasta que
+-- administración de ese hotel la apruebe. Si la persona ya tiene cuenta, mantiene
+-- su nombre y su departamento.
 create or replace function public.unirse_hotel(p_codigo text, p_mi_nombre text, p_rol text)
 returns uuid
 language plpgsql security definer set search_path = public as $$
@@ -152,8 +161,30 @@ begin
     if p_rol not in ('recepcion','limpieza','tecnico') then raise exception 'Rol no válido'; end if;
     insert into public.perfiles(id, hotel_id, nombre, rol) values (auth.uid(), hid, trim(p_mi_nombre), p_rol);
   end if;
-  insert into public.perfil_hoteles(perfil_id, hotel_id) values (auth.uid(), hid) on conflict do nothing;
+  insert into public.perfil_hoteles(perfil_id, hotel_id, aprobado) values (auth.uid(), hid, false) on conflict do nothing;
   return hid;
+end $$;
+
+-- Mis solicitudes pendientes (para mostrar «esperando aprobación»)
+create or replace function public.mis_solicitudes()
+returns table (hotel_id uuid, hotel text, creado_en timestamptz)
+language sql stable security definer set search_path = public as $$
+  select h.id, h.nombre, ph.creado_en
+    from public.perfil_hoteles ph
+    join public.hoteles h on h.id = ph.hotel_id
+   where ph.perfil_id = auth.uid() and not ph.aprobado
+   order by ph.creado_en
+$$;
+
+-- Retirar mi solicitud (por ejemplo, si me equivoqué de código)
+create or replace function public.cancelar_solicitud(p_hotel uuid)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  delete from public.perfil_hoteles where perfil_id = auth.uid() and hotel_id = p_hotel and not aprobado;
+  -- Si no le queda ningún hotel, se borra su perfil para que pueda empezar de nuevo
+  delete from public.perfiles p where p.id = auth.uid()
+     and not exists (select 1 from public.perfil_hoteles ph where ph.perfil_id = p.id);
 end $$;
 
 -- ---------- Equipo: lo que puede hacer administración --------------------
@@ -169,7 +200,7 @@ begin
   return query
     select p.id, p.nombre, p.rol, p.activo, u.email::text,
            array(select ph.hotel_id from public.perfil_hoteles ph
-                  where ph.perfil_id = p.id and ph.hotel_id in (select public.mis_hoteles()) order by ph.hotel_id)
+                  where ph.perfil_id = p.id and ph.aprobado and ph.hotel_id in (select public.mis_hoteles()) order by ph.hotel_id)
       from public.perfiles p
       left join auth.users u on u.id = p.id
      where public.comparte_hotel(p.id)
@@ -201,9 +232,10 @@ begin
   if not public.es_miembro(p_hotel) then raise exception 'Solo puedes gestionar hoteles en los que estás'; end if;
   if not public.comparte_hotel(p_perfil) then raise exception 'Esa persona no está en tus hoteles'; end if;
   if p_dentro then
-    insert into public.perfil_hoteles(perfil_id, hotel_id) values (p_perfil, p_hotel) on conflict do nothing;
+    insert into public.perfil_hoteles(perfil_id, hotel_id, aprobado) values (p_perfil, p_hotel, true)
+    on conflict (perfil_id, hotel_id) do update set aprobado = true;
   else
-    select hotel_id into otro from public.perfil_hoteles where perfil_id = p_perfil and hotel_id <> p_hotel limit 1;
+    select hotel_id into otro from public.perfil_hoteles where perfil_id = p_perfil and hotel_id <> p_hotel and aprobado limit 1;
     if otro is null then
       raise exception 'Tiene que quedarse en al menos un hotel. Para quitarle el acceso, desactiva su cuenta.';
     end if;
@@ -212,6 +244,56 @@ begin
     update public.perfiles set hotel_id = otro where id = p_perfil and hotel_id = p_hotel;
   end if;
 end $$;
+
+-- Solicitudes de acceso pendientes en los hoteles de quien administra
+create or replace function public.admin_solicitudes()
+returns table (perfil_id uuid, nombre text, rol text, correo text, hotel_id uuid, hotel text, creado_en timestamptz, ya_es_miembro boolean)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if coalesce(public.mi_rol(), '') <> 'admin' then raise exception 'Solo administración puede ver las solicitudes'; end if;
+  return query
+    select p.id, p.nombre, p.rol, u.email::text, h.id, h.nombre, ph.creado_en,
+           exists (select 1 from public.perfil_hoteles o where o.perfil_id = p.id and o.aprobado)
+      from public.perfil_hoteles ph
+      join public.perfiles p on p.id = ph.perfil_id
+      join public.hoteles h on h.id = ph.hotel_id
+      left join auth.users u on u.id = p.id
+     where not ph.aprobado and ph.hotel_id in (select public.mis_hoteles())
+     order by ph.creado_en;
+end $$;
+
+-- Aprobar (con el departamento que decida administración) o rechazar una solicitud
+create or replace function public.admin_resolver_solicitud(p_perfil uuid, p_hotel uuid, p_aprobar boolean, p_rol text default null)
+returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if coalesce(public.mi_rol(), '') <> 'admin' then raise exception 'Solo administración puede resolver solicitudes'; end if;
+  if not public.es_miembro(p_hotel) then raise exception 'Solo puedes resolver solicitudes de tus hoteles'; end if;
+  if not exists (select 1 from public.perfil_hoteles where perfil_id = p_perfil and hotel_id = p_hotel and not aprobado) then
+    raise exception 'Esa solicitud ya no está pendiente';
+  end if;
+  if p_aprobar then
+    update public.perfil_hoteles set aprobado = true where perfil_id = p_perfil and hotel_id = p_hotel;
+    -- El departamento solo se cambia si la persona aún no estaba aprobada en ningún otro hotel
+    if p_rol is not null and not exists (select 1 from public.perfil_hoteles where perfil_id = p_perfil and aprobado and hotel_id <> p_hotel) then
+      if p_rol not in ('admin','recepcion','limpieza','tecnico') then raise exception 'Departamento no válido'; end if;
+      update public.perfiles set rol = p_rol where id = p_perfil;
+    end if;
+  else
+    delete from public.perfil_hoteles where perfil_id = p_perfil and hotel_id = p_hotel and not aprobado;
+    delete from public.perfiles p where p.id = p_perfil
+       and not exists (select 1 from public.perfil_hoteles ph where ph.perfil_id = p.id);
+  end if;
+end $$;
+
+revoke all on function public.admin_solicitudes() from public, anon;
+revoke all on function public.admin_resolver_solicitud(uuid, uuid, boolean, text) from public, anon;
+revoke all on function public.mis_solicitudes() from public, anon;
+revoke all on function public.cancelar_solicitud(uuid) from public, anon;
+grant execute on function public.admin_solicitudes() to authenticated;
+grant execute on function public.admin_resolver_solicitud(uuid, uuid, boolean, text) to authenticated;
+grant execute on function public.mis_solicitudes() to authenticated;
+grant execute on function public.cancelar_solicitud(uuid) to authenticated;
 
 revoke all on function public.admin_equipo() from public, anon;
 revoke all on function public.admin_editar_persona(uuid, text, text, boolean) from public, anon;

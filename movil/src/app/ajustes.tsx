@@ -11,7 +11,7 @@ import { color, fuente, ROLES, sombra, type Hotel } from '../lib/tema';
 export default function Ajustes() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { perfil, hotel, hoteles, session, estadoPush, recargar, salir } = useSesion();
+  const { perfil, hotel, hoteles, solicitudes, session, estadoPush, recargar, salir } = useSesion();
   const [nombre, setNombre] = useState(perfil?.nombre ?? '');
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -59,7 +59,7 @@ export default function Ajustes() {
         if (e) throw e;
       }
       await recargar();
-      setMsgHotel(modoNuevo === 'codigo' ? 'Hotel añadido. Ya ves sus partes.' : 'Hotel creado. Comparte su código con el equipo.');
+      setMsgHotel(modoNuevo === 'codigo' ? 'Solicitud enviada. Verás ese hotel cuando administración la apruebe.' : 'Hotel creado. Comparte su código con el equipo.');
       setCodigo('');
       setNombreHotel('');
       setModoNuevo(null);
@@ -111,7 +111,7 @@ export default function Ajustes() {
         <View style={s.tarjeta}>
           {modoNuevo === null ? (
             <View style={{ gap: 8 }}>
-              <Boton texto="Añadir otro hotel (tengo su código)" icono="plus" onPress={() => setModoNuevo('codigo')} />
+              <Boton texto="Pedir acceso a otro hotel (tengo su código)" icono="plus" onPress={() => setModoNuevo('codigo')} />
               {perfil.rol === 'admin' ? <Boton texto="Crear un hotel nuevo" icono="office-building-cog-outline" tipo="fantasma" onPress={() => setModoNuevo('crear')} /> : null}
             </View>
           ) : (
@@ -122,16 +122,23 @@ export default function Ajustes() {
                 <Campo etiqueta="Nombre del hotel nuevo" value={nombreHotel} onChangeText={setNombreHotel} placeholder="Hotel Sol Playa" maxLength={80} />
               )}
               <Text style={s.ayuda}>
-                {modoNuevo === 'codigo' ? `Seguirás como ${ROLES[perfil.rol]} y verás los partes de todos tus hoteles juntos.` : 'Tendrá su propio código para invitar a su equipo.'}
+                {modoNuevo === 'codigo'
+                  ? `Administración de ese hotel tendrá que aprobarlo. Seguirás como ${ROLES[perfil.rol]} y verás los partes de todos tus hoteles juntos.`
+                  : 'Tendrá su propio código para invitar a su equipo.'}
               </Text>
               <Aviso texto={errorHotel} />
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <Boton texto="Cancelar" onPress={() => { setModoNuevo(null); setErrorHotel(''); }} style={{ flex: 1 }} />
-                <Boton texto={modoNuevo === 'codigo' ? 'Añadir' : 'Crear'} tipo="principal" onPress={anadirHotel} cargando={anadiendo} style={{ flex: 2 }} />
+                <Boton texto={modoNuevo === 'codigo' ? 'Enviar solicitud' : 'Crear'} tipo="principal" onPress={anadirHotel} cargando={anadiendo} style={{ flex: 2 }} />
               </View>
             </>
           )}
           <Aviso texto={msgHotel} tono={color.ok} />
+          {solicitudes.map((sol) => (
+            <Text key={sol.hotel_id} style={s.ayuda}>
+              Pendiente: {sol.hotel} (esperando aprobación de administración)
+            </Text>
+          ))}
         </View>
 
         <View style={s.tarjeta}>

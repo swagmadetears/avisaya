@@ -9,6 +9,7 @@ import { mensajeError, supabase } from '../lib/supabase';
 import { color, fuente, normalizar, ROLES, sombra, suave, type NombreIcono, type Rol } from '../lib/tema';
 
 type Persona = { id: string; nombre: string; rol: Rol; activo: boolean; correo: string | null; hoteles: string[] };
+type Solicitud = { perfil_id: string; nombre: string; rol: Rol; correo: string | null; hotel_id: string; hotel: string; creado_en: string; ya_es_miembro: boolean };
 
 const ICONO_ROL: Record<Rol, NombreIcono> = { admin: 'shield-account-outline', recepcion: 'desk', limpieza: 'broom', tecnico: 'wrench' };
 const TONO_ROL: Record<Rol, string> = { admin: color.acento, recepcion: color.camino, limpieza: color.espera, tecnico: color.curso };
@@ -19,17 +20,19 @@ export default function Equipo() {
   const router = useRouter();
   const { perfil, hoteles, recargar } = useSesion();
   const [personas, setPersonas] = useState<Persona[]>([]);
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [filtro, setFiltro] = useState('');
   const [editando, setEditando] = useState<Persona | null>(null);
 
   const cargar = useCallback(async () => {
-    const { data, error: e } = await supabase.rpc('admin_equipo');
-    if (e) setError(mensajeError(e));
+    const [{ data, error: e }, { data: sol, error: e2 }] = await Promise.all([supabase.rpc('admin_equipo'), supabase.rpc('admin_solicitudes')]);
+    if (e || e2) setError(mensajeError(e ?? e2));
     else {
       setError('');
       setPersonas((data ?? []) as Persona[]);
+      setSolicitudes((sol ?? []) as Solicitud[]);
     }
     setCargando(false);
   }, []);
@@ -80,8 +83,16 @@ export default function Equipo() {
               <MaterialCommunityIcons name="magnify" size={20} color={color.apagado} />
               <TextInput value={filtro} onChangeText={setFiltro} placeholder="Buscar por nombre, correo o departamento" placeholderTextColor={color.apagado} style={s.buscadorInput} autoCorrect={false} />
             </View>
-            <Text style={s.ayuda}>Para añadir a alguien, compártele el código de tu hotel (Ajustes). Cuando entre, aparecerá aquí y podrás cambiar su departamento y sus hoteles.</Text>
             <Aviso texto={error} />
+            <Text style={s.seccion}>
+              Solicitudes de acceso{solicitudes.length ? ` (${solicitudes.length})` : ''}
+            </Text>
+            {solicitudes.length ? (
+              solicitudes.map((sol) => <SolicitudTarjeta key={`${sol.perfil_id}-${sol.hotel_id}`} sol={sol} onHecho={cargar} />)
+            ) : (
+              <Text style={s.ayuda}>No hay nadie esperando. Para invitar a alguien, compártele el código de tu hotel (Ajustes): al registrarse, su solicitud aparecerá aquí.</Text>
+            )}
+            <Text style={[s.seccion, { marginTop: 8 }]}>Personas</Text>
           </View>
         }
         ListEmptyComponent={cargando ? <ActivityIndicator color={color.marca} /> : <Text style={s.ayuda}>No hay nadie que coincida.</Text>}
@@ -126,6 +137,67 @@ export default function Equipo() {
           }}
         />
       ) : null}
+    </View>
+  );
+}
+
+function SolicitudTarjeta({ sol, onHecho }: { sol: Solicitud; onHecho: () => void }) {
+  const [rol, setRol] = useState<Rol>(sol.rol);
+  const [confirmarRechazo, setConfirmarRechazo] = useState(false);
+  const [ocupado, setOcupado] = useState<'si' | 'no' | null>(null);
+  const [error, setError] = useState('');
+  const fecha = new Date(sol.creado_en).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+  async function resolver(aprobar: boolean) {
+    setError('');
+    setOcupado(aprobar ? 'si' : 'no');
+    const { error: e } = await supabase.rpc('admin_resolver_solicitud', { p_perfil: sol.perfil_id, p_hotel: sol.hotel_id, p_aprobar: aprobar, p_rol: aprobar && !sol.ya_es_miembro ? rol : null });
+    setOcupado(null);
+    if (e) return setError(mensajeError(e));
+    onHecho();
+  }
+
+  return (
+    <View style={[s.tarjeta, s.solicitud]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={[s.avatar, { backgroundColor: suave(color.curso, 0.15) }]}>
+          <MaterialCommunityIcons name="account-clock-outline" size={22} color={color.curso} />
+        </View>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={s.nombre}>{sol.nombre}</Text>
+          {sol.correo ? <Text style={s.correo}>{sol.correo}</Text> : null}
+          <Text style={s.hoteles}>
+            Quiere entrar en {sol.hotel} · {fecha}
+          </Text>
+        </View>
+      </View>
+      {sol.ya_es_miembro ? (
+        <Text style={s.ayuda}>Ya trabaja en otro de tus hoteles como {ROLES[sol.rol]}.</Text>
+      ) : (
+        <View style={{ gap: 6 }}>
+          <Etiqueta>Departamento al aprobar</Etiqueta>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            {(Object.keys(ROLES) as Rol[]).map((r) => (
+              <Opcion key={r} activa={rol === r} onPress={() => setRol(r)} texto={ROLES[r]} icono={ICONO_ROL[r]} tono={TONO_ROL[r]} style={{ flexBasis: '47%', flexGrow: 1 }} />
+            ))}
+          </View>
+        </View>
+      )}
+      <Aviso texto={error} />
+      {confirmarRechazo ? (
+        <View style={{ gap: 8 }}>
+          <Text style={s.filaTexto}>¿Rechazar la solicitud de {sol.nombre}?</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Boton texto="No" onPress={() => setConfirmarRechazo(false)} style={{ flex: 1 }} />
+            <Boton texto="Rechazar" tipo="principal" onPress={() => resolver(false)} cargando={ocupado === 'no'} style={{ flex: 1 }} />
+          </View>
+        </View>
+      ) : (
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Boton texto="Rechazar" tipo="fantasma" onPress={() => setConfirmarRechazo(true)} desactivado={!!ocupado} style={{ flex: 1 }} />
+          <Boton texto="Aprobar" icono="check" tipo="ok" onPress={() => resolver(true)} cargando={ocupado === 'si'} style={{ flex: 2 }} />
+        </View>
+      )}
     </View>
   );
 }
@@ -264,6 +336,8 @@ const s = StyleSheet.create({
   hojaFondo: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(6,12,10,0.4)' },
   hoja: { backgroundColor: color.superficie, borderTopLeftRadius: 22, borderTopRightRadius: 22, padding: 18, maxHeight: '92%' },
   hojaTitulo: { fontFamily: fuente.titulo, fontSize: 20, color: color.tinta },
+  seccion: { fontFamily: fuente.titulo, fontSize: 16, color: color.tinta },
+  solicitud: { flexDirection: 'column', alignItems: 'stretch', gap: 12, borderWidth: 1.5, borderColor: suave(color.curso, 0.5) },
   fila: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1.5, borderColor: color.linea, borderRadius: 12, padding: 12, backgroundColor: color.elevado },
   filaTexto: { fontFamily: fuente.textoFuerte, fontSize: 15, color: color.tinta },
 });

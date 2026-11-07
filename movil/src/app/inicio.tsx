@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { dentroDe, limites, SIN_FECHA, textoRango, type Rango } from '../lib/fec
 import { codigoParte } from '../lib/informe';
 import { buscarPartes, usePartes, type CambioParte } from '../lib/partes';
 import { useSesion } from '../lib/sesion';
+import { supabase } from '../lib/supabase';
 import { color, esHabitacion, esHoy, fuente, normalizar, ROLES, sombra, suave, type NombreIcono, type Parte } from '../lib/tema';
 
 const PRIO = { urgente: 0, normal: 1, baja: 2 } as const;
@@ -25,6 +26,21 @@ export default function Inicio() {
   const varios = hoteles.length > 1;
   const [verHotel, setVerHotelEstado] = useState('');
   const [selectorHotel, setSelectorHotel] = useState(false);
+  const [nSolicitudes, setNSolicitudes] = useState(0);
+  const esAdmin = perfil?.rol === 'admin';
+  // Administración: cuántas personas esperan aprobación (se mira al volver a esta pantalla)
+  useFocusEffect(
+    useCallback(() => {
+      if (!esAdmin) return;
+      let vivo = true;
+      supabase.rpc('admin_solicitudes').then(({ data }) => {
+        if (vivo) setNSolicitudes((data ?? []).length);
+      });
+      return () => {
+        vivo = false;
+      };
+    }, [esAdmin]),
+  );
   const claveHotel = perfil ? `avisaya:hotel:${perfil.id}` : '';
   // Recuerda el último hotel elegido en este móvil (para no tener que elegirlo cada vez)
   useEffect(() => {
@@ -271,6 +287,15 @@ export default function Inicio() {
 
   const cabeceraLista = (
     <View style={{ gap: 14 }}>
+      {esAdmin && nSolicitudes > 0 ? (
+        <Pressable onPress={() => router.push('/equipo')} style={s.solicitudes} accessibilityRole="button">
+          <MaterialCommunityIcons name="account-clock-outline" size={24} color={color.curso} />
+          <Text style={s.solicitudesTexto}>
+            {nSolicitudes === 1 ? '1 persona espera' : `${nSolicitudes} personas esperan`} tu aprobación para entrar
+          </Text>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={color.curso} />
+        </Pressable>
+      ) : null}
       {varios ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.hoteles}>
           {[{ id: 'todos', nombre: 'Todos los hoteles' }, ...hoteles].map((h) => {
@@ -478,6 +503,8 @@ const s = StyleSheet.create({
   bloqueadasNums: { fontFamily: fuente.numero, color: color.pendiente },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   hoteles: { gap: 8, paddingRight: 8 },
+  solicitudes: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: suave(color.curso, 0.12), borderRadius: 14, padding: 14, borderWidth: 1.5, borderColor: suave(color.curso, 0.4) },
+  solicitudesTexto: { flex: 1, fontFamily: fuente.textoFuerte, fontSize: 14.5, color: color.tinta },
   opHotel: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, borderWidth: 1.5, borderColor: color.linea, backgroundColor: color.elevado },
   opHotelActivo: { borderColor: color.acento, backgroundColor: suave(color.acento, 0.08) },
   opHotelNombre: { fontFamily: fuente.textoFuerte, fontSize: 16, color: color.tinta },
