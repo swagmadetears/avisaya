@@ -19,7 +19,6 @@ export default function Ajustes() {
   const [confirmarSalir, setConfirmarSalir] = useState(false);
 
   if (!perfil || !hotel) return null;
-  const esAdmin = perfil.rol === 'admin';
 
   async function guardar() {
     setMsg('');
@@ -48,16 +47,14 @@ export default function Ajustes() {
         </Pressable>
       </View>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
-        {esAdmin ? (
-          <View style={s.codigoCaja}>
-            <Text style={s.codigoEtiqueta}>CÓDIGO PARA TU EQUIPO</Text>
-            <Text style={s.codigo} selectable>
-              {hotel.codigo_union}
-            </Text>
-            <Text style={s.codigoAyuda}>Cada persona crea su cuenta en la app, elige «Tengo un código» y escribe este código.</Text>
-            <Boton texto="Compartir código" icono="share-variant" tipo="principal" onPress={compartirCodigo} />
-          </View>
-        ) : null}
+        <View style={s.codigoCaja}>
+          <Text style={s.codigoEtiqueta}>CÓDIGO PARA TU EQUIPO</Text>
+          <Text style={s.codigo} selectable>
+            {hotel.codigo_union}
+          </Text>
+          <Text style={s.codigoAyuda}>Cada persona crea su cuenta en la app, elige «Tengo un código» y escribe este código.</Text>
+          <Boton texto="Compartir código" icono="share-variant" tipo="principal" onPress={compartirCodigo} />
+        </View>
 
         <View style={s.tarjeta}>
           <Fila etiqueta="Hotel" valor={hotel.nombre} />
