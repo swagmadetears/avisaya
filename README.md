@@ -4,7 +4,8 @@ App de averías para hoteles: recepción y limpieza avisan (con foto) y el técn
 
 ```
 avisaya/
-├── supabase/01_esquema.sql   ← base de datos (pegar en Supabase → SQL Editor)
+├── supabase/01_esquema.sql         ← base de datos (pegar en Supabase → SQL Editor)
+├── supabase/02_notificaciones.sql  ← avisos con el móvil bloqueado (pegar después del 01)
 └── movil/                    ← app para iPhone y Android (Expo / React Native)
 ```
 
@@ -88,8 +89,12 @@ npm install
 - Todo en tiempo real y aviso dentro de la app (con vibración) cuando llega algo.
 - Cada hotel solo ve sus datos.
 
+## Notificaciones con el móvil bloqueado
+- Base de datos: ejecutar `supabase/02_notificaciones.sql` en el SQL Editor.
+- No funcionan en Expo Go: hace falta la versión de desarrollo propia (`eas build --profile development`).
+- En la app, **Ajustes → Avisos con la app cerrada** dice si están activos en ese móvil.
+
 ## Siguiente fase
-- Notificaciones push con el móvil bloqueado (requiere una «development build» con EAS).
 - Panel web para recepción en ordenador.
 - Informes: averías por habitación y tiempos de reparación.
 - Publicación en App Store y Google Play.

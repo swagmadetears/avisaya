@@ -51,6 +51,13 @@
           "cameraPermission": "Avisaya usa la cámara para adjuntar fotos de las averías.",
           "photosPermission": "Avisaya usa tus fotos para adjuntar imágenes de las averías."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#E4561B",
+          "defaultChannel": "partes"
+        }
       ]
     ],
     "scheme": "avisaya"

@@ -1,5 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { olvidarDispositivo, registrarNotificaciones, type EstadoPush } from './notificaciones';
 import { supabase } from './supabase';
 import type { Hotel, Perfil } from './tema';
 
@@ -10,6 +11,8 @@ type Sesion = {
   session: Session | null;
   perfil: Perfil | null;
   hotel: Hotel | null;
+  /** Si este móvil recibe avisos con la app cerrada */
+  estadoPush: EstadoPush | null;
   recargar: () => Promise<void>;
   salir: () => Promise<void>;
 };
@@ -22,6 +25,8 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [perfilDe, setPerfilDe] = useState<string | null>(null);
+  const [estadoPush, setEstadoPush] = useState<EstadoPush | null>(null);
+  const tokenPush = useRef<string | undefined>(undefined);
 
   const cargarPerfil = useCallback(async (uid: string | undefined) => {
     if (!uid) {
@@ -69,14 +74,32 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     await cargarPerfil(data.session?.user.id);
   }, [cargarPerfil]);
 
+  // Registra el móvil para recibir avisos en cuanto la persona pertenece a un hotel
+  const perfilId = perfil?.id;
+  useEffect(() => {
+    if (!perfilId) return;
+    let vivo = true;
+    registrarNotificaciones().then((r) => {
+      if (!vivo) return;
+      tokenPush.current = r.token;
+      setEstadoPush(r.estado);
+    });
+    return () => {
+      vivo = false;
+    };
+  }, [perfilId]);
+
   const salir = useCallback(async () => {
+    await olvidarDispositivo(tokenPush.current).catch(() => {});
+    tokenPush.current = undefined;
+    setEstadoPush(null);
     await supabase.auth.signOut();
     setPerfil(null);
     setHotel(null);
   }, []);
 
   const perfilListo = !session || perfilDe === session.user.id;
-  return <Ctx.Provider value={{ cargando, perfilListo, session, perfil, hotel, recargar, salir }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ cargando, perfilListo, session, perfil, hotel, estadoPush, recargar, salir }}>{children}</Ctx.Provider>;
 }
 
 export function useSesion(): Sesion {

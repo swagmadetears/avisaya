@@ -11,7 +11,7 @@ import { color, fuente, ROLES, sombra } from '../lib/tema';
 export default function Ajustes() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { perfil, hotel, session, recargar, salir } = useSesion();
+  const { perfil, hotel, session, estadoPush, recargar, salir } = useSesion();
   const [nombre, setNombre] = useState(perfil?.nombre ?? '');
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
@@ -60,6 +60,7 @@ export default function Ajustes() {
           <Fila etiqueta="Hotel" valor={hotel.nombre} />
           <Fila etiqueta="Departamento" valor={ROLES[perfil.rol]} />
           <Fila etiqueta="Correo" valor={session?.user.email ?? ''} />
+          <Fila etiqueta="Avisos con la app cerrada" valor={TEXTO_PUSH[estadoPush ?? 'no-disponible']} />
         </View>
 
         <View style={s.tarjeta}>
@@ -84,6 +85,14 @@ export default function Ajustes() {
     </View>
   );
 }
+
+const TEXTO_PUSH: Record<NonNullable<ReturnType<typeof useSesion>['estadoPush']>, string> = {
+  activo: 'Activados',
+  'sin-permiso': 'Sin permiso (actívalo en los ajustes del móvil)',
+  'expo-go': 'No disponibles en Expo Go',
+  'no-disponible': 'No disponibles',
+  error: 'Error al activarlos',
+};
 
 function Fila({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   return (
