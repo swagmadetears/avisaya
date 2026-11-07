@@ -10,7 +10,7 @@ import { Aviso, Boton, Campo, Etiqueta, Opcion } from '../components/ui';
 import { subirFoto } from '../lib/partes';
 import { useSesion } from '../lib/sesion';
 import { mensajeError, supabase } from '../lib/supabase';
-import { CATEGORIAS, color, fuente, type Prioridad } from '../lib/tema';
+import { CATEGORIAS, color, fuente, suave, type Prioridad } from '../lib/tema';
 
 /** Reduce la foto a 1400 px como máximo para que suba rápido. */
 async function reducir(uri: string): Promise<string> {
@@ -79,6 +79,7 @@ export default function Nuevo() {
   }
 
   const esLimpieza = perfil?.rol === 'limpieza';
+  const nombreHotel = hoteles.find((h) => h.id === hotelId)?.nombre ?? '';
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: color.fondo }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -86,6 +87,13 @@ export default function Nuevo() {
         <View style={{ flex: 1 }}>
           <Text style={s.ceja}>{esLimpieza ? 'AVISAR DE UNA AVERÍA' : 'NUEVO PARTE'}</Text>
           <Text style={s.titulo}>{esLimpieza ? '¿Has visto algo roto?' : '¿Qué hay que arreglar?'}</Text>
+          {/* Siempre a la vista: en qué hotel se crea el parte */}
+          <View style={s.enHotel} accessibilityLabel={`Hotel del aviso: ${nombreHotel}`}>
+            <MaterialCommunityIcons name="office-building-outline" size={15} color={color.marca2} />
+            <Text style={s.enHotelTexto} numberOfLines={1}>
+              {nombreHotel || 'Elige el hotel'}
+            </Text>
+          </View>
         </View>
         <Pressable onPress={() => router.back()} style={s.cerrar} accessibilityRole="button" accessibilityLabel="Cerrar">
           <MaterialCommunityIcons name="close" size={22} color={color.tinta} />
@@ -95,7 +103,7 @@ export default function Nuevo() {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 18, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
         {hoteles.length > 1 ? (
           <View style={{ gap: 8 }}>
-            <Etiqueta>Hotel</Etiqueta>
+            <Etiqueta>¿En qué hotel es la avería?</Etiqueta>
             <View style={s.hotelesFila}>
               {hoteles.map((h) => (
                 <Opcion key={h.id} activa={hotelId === h.id} onPress={() => setHotelId(h.id)} texto={h.nombre} icono="office-building-outline" tono={color.marca2} style={{ flexBasis: '47%', flexGrow: 1 }} />
@@ -152,7 +160,7 @@ export default function Nuevo() {
         </Pressable>
 
         <Aviso texto={error} />
-        <Boton texto={foto && enviando ? 'Subiendo foto…' : 'Enviar a mantenimiento'} icono="send" tipo="principal" grande onPress={enviar} cargando={enviando} />
+        <Boton texto={foto && enviando ? 'Subiendo foto…' : hoteles.length > 1 && nombreHotel ? `Enviar a ${nombreHotel}` : 'Enviar a mantenimiento'} icono="send" tipo="principal" grande onPress={enviar} cargando={enviando} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -162,6 +170,8 @@ const s = StyleSheet.create({
   barra: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, backgroundColor: color.superficie, borderBottomWidth: 1, borderBottomColor: color.linea },
   ceja: { fontFamily: fuente.textoFuerte, fontSize: 11.5, letterSpacing: 0.9, color: color.acento },
   titulo: { fontFamily: fuente.titulo, fontSize: 21, color: color.tinta },
+  enHotel: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: 6, backgroundColor: suave(color.marca2, 0.1), borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, maxWidth: '100%' },
+  enHotelTexto: { fontFamily: fuente.textoFuerte, fontSize: 13, color: color.marca2, flexShrink: 1 },
   cerrar: { width: 42, height: 42, borderRadius: 12, backgroundColor: color.elevado, alignItems: 'center', justifyContent: 'center' },
   rejilla: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -4 },
   hotelesFila: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
