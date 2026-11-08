@@ -24,8 +24,8 @@
     search: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>'),
     go: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
   };
-  const tiles = [['Fontanería', I.drop, '#dfeafb', '#2f6fd6'], ['Electricidad', I.zap, '#fdf1d6', '#d99a0b'], ['Climatización', I.snow, '#d9f1f3', '#0e9aa7'],
-    ['TV / WiFi', I.tv, '#ece4fb', '#7c4ddb'], ['Cerraduras', I.lock, '#e6eae9', '#4f5d59'], ['Mobiliario', I.bed, '#f6e7da', '#b06a35'], ['Otro', I.warn, '#e6eae9', '#5a6b66']];
+  const tiles = [['Fontanería', I.drop, 'rgba(47,111,214,.2)', '#6fa0f0'], ['Electricidad', I.zap, 'rgba(217,154,11,.2)', '#f2bd3c'], ['Climatización', I.snow, 'rgba(14,154,167,.2)', '#4fd0da'],
+    ['TV / WiFi', I.tv, 'rgba(124,77,219,.22)', '#a786f0'], ['Cerraduras', I.lock, 'rgba(255,255,255,.08)', '#b9c4c1'], ['Mobiliario', I.bed, 'rgba(176,106,53,.22)', '#e09a62'], ['Otro', I.warn, 'rgba(255,255,255,.08)', '#a9b6b2']];
   const STATES = {
     avisado: { tag: 'AVISADO', n: 1, c: '#d93a2b' },
     camino: { tag: 'TÉCNICO DE CAMINO', n: 2, c: '#2563c9' },
@@ -60,10 +60,10 @@
       <b>Urgente · Hotel Sol Playa · Hab. 312</b><span class="t">Climatización — El aire acondicionado hace mucho ruido y no enfría</span></div></div>
     <div class="ph__top"><div class="ph__hello">Buenos días,</div><div class="ph__name">Javi · Mantenimiento</div></div>
     <div class="ph__stats">
-      <div class="ph__stat"><i style="background:#fde8e5;color:#d93a2b">${I.inbox}</i><div><b data-n="pend">1</b><span>Sin asignar</span></div></div>
-      <div class="ph__stat"><i style="background:#fde8e5;color:#d93a2b">${I.alert}</i><div><b data-n="urg">1</b><span>Urgentes</span></div></div>
-      <div class="ph__stat"><i style="background:#e3ecfb;color:#2563c9">${I.user}</i><div><b data-n="mios">0</b><span>Míos</span></div></div>
-      <div class="ph__stat"><i style="background:#e0f2e9;color:#1e8a5a">${I.check}</i><div><b data-n="hechos">0</b><span>Hechos hoy</span></div></div>
+      <div class="ph__stat"><i style="background:rgba(239,90,72,.16);color:#ff7a68">${I.inbox}</i><div><b data-n="pend">1</b><span>Sin asignar</span></div></div>
+      <div class="ph__stat"><i style="background:rgba(239,90,72,.16);color:#ff7a68">${I.alert}</i><div><b data-n="urg">1</b><span>Urgentes</span></div></div>
+      <div class="ph__stat"><i style="background:rgba(80,140,255,.16);color:#7eaaff">${I.user}</i><div><b data-n="mios">0</b><span>Míos</span></div></div>
+      <div class="ph__stat"><i style="background:rgba(50,190,120,.16);color:#4fd38f">${I.check}</i><div><b data-n="hechos">0</b><span>Hechos hoy</span></div></div>
     </div>
     <div class="ph__search">${I.search}Buscar habitación, avería, nombre…</div>
     <div class="ph__chips"><span class="is-on">Por hacer</span><span>Míos</span><span>Todos</span></div>
@@ -80,7 +80,7 @@
     <div class="ph3__info">
       <div><span>Avisó</span><b>Lucía (Recepción)</b></div>
       <div><span>Hora del aviso</span><b>09:12</b></div>
-      <div><span>Prioridad</span><b style="color:#d93a2b">Urgente</b></div>
+      <div><span>Prioridad</span><b style="color:#ff7a68">Urgente</b></div>
       <div><span>Habitación bloqueada</span><b>No</b></div>
     </div>
   </div>`;

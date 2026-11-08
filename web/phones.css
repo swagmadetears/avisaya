@@ -144,3 +144,38 @@
   .ph--1, .ph--4 { display: none; }
 }
 @media (min-width: 640px) and (max-width: 1023px) { .phones { gap: 2.4%; } }
+
+/* ===== tema oscuro de la app (se lee mejor sobre la web negra) ===== */
+.ph__body { background: #1d2321; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14), inset 0 0 0 .6cqh #272e2c; }
+.ph__notch { background: #000; }
+.ph__screen { background: #0e1312; color: #eef3f1; }
+.ph__label, .ph__stat span, .ph3__info span, .ph4__rows span, .ph4__times span, .ph__hello { color: #93a29e; }
+.ph__box, .ph1__tile, .ph__stat, .ph__card, .ph3__info, .ph4__times div, .ph4__hist, .ph4__rows, .ph__search, .ph__chips span { background: #182120; border-color: #26312e; color: #eef3f1; }
+.ph__stat, .ph__card { box-shadow: 0 .3em 1em -.5em rgba(0,0,0,.6); }
+.ph1__head, .ph4__head { background: #131a19; border-bottom-color: #222b29; }
+.ph1__x { background: #182120; border-color: #2a3532; color: #cfd8d5; }
+.ph__chip { background: rgba(14,154,167,.16); color: #5fd0d9; }
+.ph1__tile.is-on { border-color: #22b8c4; background: rgba(14,154,167,.18); box-shadow: 0 0 0 2px rgba(34,184,196,.25); }
+.ph__top { background: linear-gradient(180deg, #0f3a34, #0b2b27); }
+.ph__search { color: #7f8f8b; }
+.ph__chips span.is-on { background: #eef3f1; color: #0e1312; border-color: #eef3f1; }
+.ph__card { border-left-color: #3a4643; }
+.ph__card.is-urgent { border-left-color: #ef5a48; }
+.ph__hab { border-color: #2c3835; }
+.ph__hab small, .ph__stepnames { color: #7f8f8b; }
+.ph__what { color: #c4cecb; }
+.ph__type i { background: rgba(14,154,167,.18); color: #4fd0da; }
+.ph__tag { background: #222c2a; color: #a9b6b2; }
+.ph__tag--urg, .ph__tag.st-avisado { background: rgba(239,90,72,.16); color: #ff7a68; }
+.ph__tag.st-camino { background: rgba(80,140,255,.16); color: #7eaaff; }
+.ph__tag.st-reparando { background: rgba(240,150,50,.16); color: #f5a54a; }
+.ph__tag.st-resuelto { background: rgba(50,190,120,.16); color: #4fd38f; }
+.ph__steps span { background: #26312e; }
+.ph__banner { background: rgba(32,40,38,.97); box-shadow: 0 1em 2.4em -.6em rgba(0,0,0,.7), inset 0 0 0 1px rgba(255,255,255,.06); }
+.ph__banner .app, .ph__banner span.t { color: #9aa8a4; }
+.ph__banner.is-urg b { color: #ff7a68; }
+.ph__toast { background: #eef3f1; color: #0e1312; }
+.ph3__info div, .ph4__rows div { border-bottom-color: #222b29; }
+.ph4__hist li::after { background: rgba(228,86,27,.35); }
+.ph4__hist small { color: #7f8f8b; }
+.ph1__ico { filter: saturate(1.15); }

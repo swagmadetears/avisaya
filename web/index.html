@@ -209,6 +209,10 @@
     background: radial-gradient(45% 50% at 50% 50%, rgba(228,86,27,.22), rgba(228,86,27,0) 70%); }
   footer.closing { border-top: 0; }
 
+  /* fondo de partículas: detrás de todo; las secciones dejan ver el fondo */
+  .av-particles { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; filter: blur(1.5px); }
+  #top, footer.closing { position: relative; z-index: 1; }
+  #top > section, footer.closing, .ground-inverse:not(.nav) { background: transparent !important; }
   /* desplazamiento suave */
   html.lenis, html.lenis body { height: auto; }
   html.lenis.lenis-smooth { scroll-behavior: auto !important; }
@@ -729,6 +733,7 @@
 <script type="module" src="assets/motion/motion.js"></script>
 <script type="module" src="assets/layout/layout.js"></script>
 <script src="vendor/lenis.min.js" defer></script>
+<script src="particles.js" defer></script>
 <script src="phones.js" defer></script>
 <script src="avisaya.js" defer></script>
 </body>
