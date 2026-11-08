@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="es" data-type="software" data-radius="soft" data-ground="sage" data-buttons="pill" data-motion="" class="m-enter mo-js m-enter-done mo-safe" data-mode="light" style="--g-kl: 0.909; --g-k: 0.909; --g-kp: 0.080; --g-kd: 1.000;" data-tone="light" data-moments-ready="1" data-ready="1"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Avisaya: app de averías para hoteles</title>
+<meta name="description" content="Recepción y limpieza avisan de una avería con foto y el técnico la recibe al momento en el móvil. Para hoteles y cadenas hoteleras.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Avisaya: app de averías para hoteles">
+<meta property="og:description" content="Partes de mantenimiento con foto, avisos al momento e informe PDF de cada avería.">
+<meta property="og:image" content="share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#eef3f1">
+<!-- <link rel="canonical" href="https://[dominio de Avisaya]/"> pendiente: el cliente aún no tiene dominio -->
+<meta name="site-kind" content="software">
+<meta name="page-type" content="software">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Reddit+Sans:wght@400..700&amp;family=JetBrains+Mono:wght@400..500&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<link rel="stylesheet" href="assets/ui/cards.css">
+<link rel="stylesheet" href="assets/motion/motion.css">
+<link rel="stylesheet" href="assets/backgrounds/backgrounds.css">
+<link rel="stylesheet" href="assets/layout/layout.css">
+<link rel="stylesheet" href="assets/icons/icon.css">
+<style>
+:root {
+  --p-bg: #eef3f1; --p-surface: #e2eae7; --p-ink: #0f1f1c; --p-muted: #5a6b66;
+  --p-accent: #e4561b; --p-accent-ink: #111111; --p-action: #e4561b; --p-action-ink: #111111;
+  --p-inv-bg: #0f1f1c; --p-inv-surface: #1c2b28; --p-inv-ink: #eef3f1; --p-inv-muted: #919b98;
+  --p-inv-accent: #e4561b; --p-inv-accent-ink: #111111; --p-inv-action: #e4561b; --p-inv-action-ink: #111111;
+  --font-display: "Reddit Sans", system-ui, sans-serif;
+  --font-text: "Reddit Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.03em;
+  --display-tracking-xl: -0.04em;
+}
+</style>
+<link rel="stylesheet" href="assets/ui/base.css">
+<link rel="stylesheet" href="assets/ui/window/fragment.css">
+<link rel="stylesheet" href="assets/ui/chat/fragment.css">
+<link rel="stylesheet" href="assets/ui/notify/fragment.css">
+<link rel="stylesheet" href="assets/ui/toggles/fragment.css">
+<link rel="stylesheet" href="assets/ui/checklist/fragment.css">
+<link rel="stylesheet" href="assets/ui/doc/fragment.css">
+<link rel="stylesheet" href="assets/ui/search/fragment.css">
+<link rel="stylesheet" href="assets/moments/liquid-type/moment.css">
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
+<script src="assets/backgrounds/backgrounds.js"></script>
+<script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
+<link rel="modulepreload" href="assets/moments/moments.js">
+<link rel="modulepreload" href="assets/moments/lib.js">
+<link rel="modulepreload" href="assets/moments/liquid-type/moment.js">
+<style>
+  /* el logotipo de Avisaya: la llave sobre el cuadrado naranja de la app */
+  .logo-tile { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--p-accent); margin-right: var(--s-2); flex: none; }
+  .logo-tile svg { width: 16px; height: 16px; }
+  /* app-frame (sections-library.md) */
+  .app.ui { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-top: var(--s-7); background: var(--u-bg); border: 1px solid var(--u-border); border-radius: var(--u-r); box-shadow: var(--u-shadow); }
+  .app > .app__pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
+  .app > .app__pane + .app__pane { border-left: 1px solid var(--u-line); }
+  .app > .app__pane > .ui-panel { width: 100%; border: 0; border-radius: 0; box-shadow: none; }
+  .app > .app__pane::after { content: ""; position: absolute; inset: auto 0 0 0; height: 64px; background: linear-gradient(transparent, var(--u-bg)); pointer-events: none; }
+  @media (min-width: 1024px) and (max-width: 1279px) { .app.ui { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); } }
+  @media (max-width: 1023px) {
+    .app.ui { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    .app > .app__pane--list { max-height: 252px; }
+    .app > .app__pane--list::after { display: none; }
+    .app .ui-win__side { display: none; }
+    .app .ui-win__body { grid-template-columns: minmax(0, 1fr); }
+    .app > .app__pane + .app__pane { border-left: 0; border-top: 1px solid var(--u-line); }
+  }
+  @media (max-width: 639px) {
+    .app.ui { grid-template-rows: minmax(0, 1fr); }
+    .app > .app__pane--list { display: none; }
+    .app > .app__pane + .app__pane { border-top: 0; }
+  }
+  /* una --p-h por grupo de tarjetas */
+  #funciones .panel { --p-h: 336px; }
+  #pasos .panel { --p-h: 300px; }
+  .faq__panel { --p-h: 340px; margin-top: var(--s-4); }
+  #informes .at-corner { --ax: 40px; }
+  /* la portada: los móviles recortados sobre el fondo de la página (sin caja) */
+  #top .hero--product .hero__stage:has(> picture) { margin-top: var(--s-6); margin-inline: 0; margin-bottom: calc(var(--s-5) - var(--hpadb, 64px)); border-radius: 0; background: none; overflow: visible; }
+  .hero__stage > picture > img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: contain; padding: 5% 0 4%; }
+  @media (max-width: 639px) { #funciones .panel { --p-h: 168px; } #pasos .panel { --p-h: 200px; } .faq__panel { --p-h: 200px; } }
+  /* 1024-1279: los tres pasos en una fila */
+  @media (min-width: 1024px) and (max-width: 1279px) { #pasos .grid > .card.span-4 { grid-column: auto / span 4; } }
+  /* tableta en vertical: las cuatro funciones en una pantalla; pasos y preguntas en dos */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    #funciones { --h: 1; }
+    #funciones > .wrap { display: flex; flex-direction: column; row-gap: var(--card-gap); }
+    #pasos { --h: 2; }
+    #informes .at-corner { --ax: max(40px, 50% - 244px); }
+    #funciones .panel { --p-h: 180px; }
+    #funciones-h .muted { display: none; }
+    #pasos .panel { --p-h: max(220px, (200svh - 420px) / 3 - 150px); }
+    #preguntas .grid > .span-5 { grid-column: 1 / span 5; }
+    #preguntas .faq { grid-column: 6 / -1; }
+    #preguntas .faq__panel { --p-h: 220px; }
+  }
+  @media (max-width: 1023px) {
+    #idea .mo-lt__type { font-size: 13vw; line-height: 1; }
+    #informes .rows { display: none; }
+  }
+  @media (max-width: 639px) {
+    #pasos, #preguntas { --hm: 2; }
+    #top .hero--product .hero__stage:has(> picture) { flex: 1 1 auto; aspect-ratio: auto; min-height: 240px; margin-bottom: 0; }
+    #funciones-h .muted, #informes .rows + p { display: none; }
+    #idea .mo-lt__type { font-size: 14.5vw; line-height: 1.02; }
+    #idea .t-lead { font-size: 20px; }
+  }
+  @media (max-width: 359px) { .nav .nav__actions .btn { padding-inline: var(--s-4); } }
+</style>
+</head>
+<body>
+<!-- type: software
+     deal: hero product (la app en el escenario: cuatro móviles con capturas reales), nav nav-centre, close close-type,
+     footer footer-columns, rhythm surface-pairs (#funciones), buttons pill, mark wordmark -> logotipo propio de Avisaya,
+     palette: colores de marca del cliente (start.mjs brand), type reddit, ground sage
+     effect: grain-gradient en el marco [data-visual] de #informes; card grounds: ninguno de la familia (paneles lisos)
+     moments: liquid-type en #idea (sección propia, enunciado) -->
+
+<header class="nav nav--centre" data-m-nav="1">
+  <div class="wrap nav__bar">
+    <a class="skip-link" href="#top">Saltar al contenido</a>
+    <a class="nav__logo" href="#top"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Avisaya</a>
+    <nav class="nav__links" aria-label="Principal">
+      <div class="nav__item"><a class="nav__link" href="#partes">Partes</a></div>
+      <div class="nav__item"><a class="nav__link" href="#funciones">Funciones</a></div>
+      <div class="nav__item"><a class="nav__link" href="#informes">Informes</a></div>
+      <div class="nav__item"><a class="nav__link" href="#pasos">Equipo</a></div>
+      <div class="nav__item"><a class="nav__link" href="#preguntas">Preguntas</a></div>
+    </nav>
+    <div class="nav__actions">
+      <a class="btn btn--primary" href="mailto:hola@avisaya.example?subject=Demo%20de%20Avisaya">Pedir una demo</a>
+    </div>
+    <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menú">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero hero--product is-still is-entered" data-enter="" aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text hero__in">
+      <div class="hero__head">
+        <div>
+          <h1 id="hero-h">App de averías para hoteles</h1>
+          <p class="hero__lead">Recepción y limpieza avisan con una foto y el técnico lo recibe al momento en el móvil, con el hotel y la habitación. 7 tipos de avería y 4 estados, en iPhone y Android.</p>
+        </div>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="mailto:hola@avisaya.example?subject=Demo%20de%20Avisaya">Pedir una demo<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"></path><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"></path></svg></a>
+          <a class="btn btn--secondary" href="#partes">Ver cómo funciona</a>
+        </div>
+      </div>
+      <div class="hero__stage" data-product-place="stage">
+        <picture><source media="(max-width: 639px)" srcset="img/avisaya-app-movil.webp" width="1280" height="1132"><img class="is-cutout" src="img/avisaya-app.webp" srcset="img/avisaya-app-1280.webp 1280w, img/avisaya-app.webp 2560w" sizes="(max-width: 1440px) 100vw, 1280px" width="2560" height="1132" alt="Cuatro pantallas de la app Avisaya: el formulario para avisar de una avería en la habitación 312, la notificación urgente que recibe el técnico, el aviso de que el técnico va de camino y el detalle del parte con sus tiempos" fetchpriority="high" data-source="client" data-subject="la app Avisaya"></picture>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="partes" aria-labelledby="partes-h">
+    <div class="wrap">
+      <div class="grid">
+        <h2 class="span-5" id="partes-h">Todas las averías del hotel en una lista</h2>
+        <div class="span-6 start-7">
+          <p>Cada aviso entra con habitación, tipo de avería y foto. El técnico pulsa «Voy para allá», después «Reparando» y «Resuelto», y quien avisó lo ve sin llamar.</p>
+          <p><a class="link" href="#funciones">Ver las funciones</a></p>
+        </div>
+      </div>
+      <div class="ui app fill" role="img" aria-label="La app Avisaya en el ordenador: la lista de partes abiertos de Hotel Sol a la izquierda y, a la derecha, el parte de la habitación 214 con los mensajes entre recepción y el técnico" data-ui-pause-host="">
+        <div class="app__pane app__pane--list">
+          <div class="ui ui-panel ui-win is-ui-held" data-ui="window" data-open="Avisado" data-work="De camino" data-done="Resuelto" data-ui-still="">
+            <div class="ui-win__bar">
+              <span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="ui-win__crumb">Hotel Sol <i>/</i> <b>Abiertos</b></span>
+              <span class="ui-spacer"></span>
+              <span class="ui-win__search" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg><span class="ui-win__ph">Buscar</span><span class="ui-kbd">/</span></span>
+            </div>
+            <div class="ui-win__body">
+              <nav class="ui-win__side" aria-hidden="true">
+                <span class="ui-win__nav is-on"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M2.5 9h3l1 1.5h3l1-1.5h3"></path><path d="M2.5 9 4 3.5h8L13.5 9v3.5h-11z"></path></svg>Abiertos<em>9</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.5"></circle><path d="M3.5 13.5c.6-2.3 2.4-3.5 4.5-3.5s3.9 1.2 4.5 3.5"></path></svg>Míos<em>2</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"></circle><path d="M8 5v3l2 1.5"></path></svg>Urgentes<em>3</em></span>
+                <span class="ui-win__nav"><svg class="ui-icon" viewBox="0 0 16 16"><path d="m3.5 8.4 2.8 2.8 6.2-6.4"></path></svg>Resueltos</span>
+                <span class="ui-win__label">Hoteles</span>
+                <span class="ui-win__nav"><span class="ui-win__hash">#</span>Hotel Sol</span>
+                <span class="ui-win__nav"><span class="ui-win__hash">#</span>Sol Playa</span>
+              </nav>
+              <div class="ui-win__main">
+                <div class="ui-win__cols" aria-hidden="true"><span>Lugar</span><span>Avería</span><span>Estado</span><span>Hace</span></div>
+                <ul class="ui-win__rows">
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="1">214</span><span class="ui-win__who">Habitación 214</span><span class="ui-win__sub">Climatización · no enfría</span><span class="ui-win__st is-you" data-st="">Urgente</span><span class="ui-win__age">4 min</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="3">108</span><span class="ui-win__who">Habitación 108</span><span class="ui-win__sub">Fontanería · fuga en el lavabo</span><span class="ui-win__st" data-st="">De camino</span><span class="ui-win__age">9 min</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="4">412</span><span class="ui-win__who">Habitación 412</span><span class="ui-win__sub">Cerraduras · la tarjeta no abre</span><span class="ui-win__st is-done" data-st="">Resuelto</span><span class="ui-win__age">12 min</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="2">PI</span><span class="ui-win__who">Piscina</span><span class="ui-win__sub">Electricidad · 2 focos apagados</span><span class="ui-win__st" data-st="">Falta pieza</span><span class="ui-win__age">1 h</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="5">305</span><span class="ui-win__who">Habitación 305</span><span class="ui-win__sub">TV / WiFi · sin canales</span><span class="ui-win__st is-done" data-st="">Resuelto</span><span class="ui-win__age">2 h</span></li>
+                  <li class="ui-win__row is-sel" data-row=""><span class="ui-avatar" data-tone="3">RE</span><span class="ui-win__who">Restaurante</span><span class="ui-win__sub">Climatización · cámara con ruido</span><span class="ui-win__st is-work" data-st="">De camino</span><span class="ui-win__age">2 h</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="1">221</span><span class="ui-win__who">Habitación 221</span><span class="ui-win__sub">Mobiliario · cajón roto</span><span class="ui-win__st is-done" data-st="">Resuelto</span><span class="ui-win__age">3 h</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="4">GI</span><span class="ui-win__who">Gimnasio</span><span class="ui-win__sub">Electricidad · cinta sin corriente</span><span class="ui-win__st" data-st="">Avisado</span><span class="ui-win__age">3 h</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="2">117</span><span class="ui-win__who">Habitación 117</span><span class="ui-win__sub">Fontanería · cisterna</span><span class="ui-win__st is-done" data-st="">Resuelto</span><span class="ui-win__age">4 h</span></li>
+                  <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="5">HA</span><span class="ui-win__who">Hall</span><span class="ui-win__sub">Otro · puerta automática</span><span class="ui-win__st is-done" data-st="">Resuelto</span><span class="ui-win__age">5 h</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="app__pane app__pane--open" data-ui-loop="">
+          <div class="ui ui-panel ui-chat" data-ui="chat">
+            <div class="ui-head">
+              <span class="ui-agent" aria-hidden="true"></span>
+              <div class="ui-title">Habitación 214 · Climatización</div>
+              <span class="ui-chat__online">Urgente</span>
+              <span class="ui-spacer"></span>
+            </div>
+            <div class="ui-chat__body">
+              <div class="ui-chat__day">Hoy, 9:12 · avisa Lucía (Recepción)</div>
+              <div class="ui-msg ui-msg--me" data-chat-q="">
+                <span class="ui-msg__text">El aire no enfría y el cliente está en la habitación. Te dejo la foto del mando.</span>
+              </div>
+              <div class="ui-msg ui-msg--bot" data-chat-a="">
+                <span class="ui-agent ui-msg__av" aria-hidden="true"></span>
+                <span class="ui-msg__col">
+                  <span class="ui-chat__answer"><span class="ui-chat__w">Voy</span> <span class="ui-chat__w">para</span> <span class="ui-chat__w">allá.</span> <span class="ui-chat__w">Llevo</span> <span class="ui-chat__w">un</span> <span class="ui-chat__w">filtro</span> <span class="ui-chat__w">nuevo</span> <span class="ui-chat__w">y</span> <span class="ui-chat__w">llego</span> <span class="ui-chat__w">en</span> <b><span class="ui-chat__w">5</span> <span class="ui-chat__w">minutos</span></b><span class="ui-chat__w">.</span></span>
+                  <span class="ui-chat__srcs">
+                    <span class="ui-chat__src"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"></path><path d="M9 2.5v3h3"></path></svg>Parte PT-3FA92C1B</span>
+                    <span class="ui-chat__src"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M2.5 4.5h3l1.2-1.8h2.6l1.2 1.8h3v8h-11z"></path><circle cx="8" cy="8.3" r="2.2"></circle></svg>Foto del mando</span>
+                  </span>
+                </span>
+              </div>
+              <div class="ui-msg ui-msg--me">
+                <span class="ui-msg__text">Gracias, se lo digo al cliente.</span>
+              </div>
+            </div>
+            <div class="ui-chat__input">
+              <span class="ui-chat__ph">Escribe una nota</span>
+              <span class="ui-chat__send" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 13V3.5M3.8 7.5 8 3.3l4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section g2 ground-surface" id="funciones" aria-labelledby="funciones-h">
+    <div class="wrap">
+      <div class="group">
+        <div class="section-head">
+          <h2 id="funciones-h">La app de mantenimiento, a la vista de todo el hotel. <span class="muted">Avisos, habitaciones, hoteles e historial.</span></h2>
+        </div>
+        <div class="grid">
+          <article class="card card--row card--open span-6 m-nolift">
+            <h3>Avisa de cada avería al momento</h3>
+            <p>La notificación llega al móvil con el hotel, la habitación y la prioridad. Las urgentes salen en rojo y primero.</p>
+            <div class="panel">
+              <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:380px;--ax:32px;--ay:calc(100% - 180px);--ay-sm:calc(100% - 180px)" data-ui-loop="">
+                <div class="ui ui-notify" data-ui="notify">
+                  <ul class="ui-notify__list" data-notify-list="">
+                    <li class="ui-note"><span class="ui-agent ui-note__av" aria-hidden="true"></span><span class="ui-note__text"><span class="ui-note__title">Hotel Sol · Hab. 214<time>ahora</time></span><span class="ui-note__body">Urgente: el aire no enfría</span></span><span class="ui-btn ui-btn--sm ui-note__btn">Abrir</span></li>
+                    <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="5">JV</span><span class="ui-note__text"><span class="ui-note__title">Javi va de camino<time>6 min</time></span><span class="ui-note__body">Hab. 108 · fuga en el lavabo</span></span></li>
+                    <li class="ui-note"><span class="ui-note__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="m3.5 8.4 2.8 2.8 6.2-6.4"></path></svg></span><span class="ui-note__text"><span class="ui-note__title">3 partes resueltos<time>1 h</time></span><span class="ui-note__body">Hoy en Sol Playa</span></span></li>
+                  </ul>
+                </div>
+              </div></div>
+            </div>
+          </article>
+          <article class="card card--row card--open span-6 m-nolift">
+            <h3>Bloquea habitaciones con avería</h3>
+            <p>Si una habitación no se puede ocupar, recepción la ve marcada hasta que el técnico cierra el parte.</p>
+            <div class="panel">
+              <div class="stage stage--fade-b"><div class="at-right to-edge" style="--ax:32px;--ay:56px">
+                <div class="ui ui-panel ui-toggles is-ui-held" data-ui="toggles" data-ui-still="">
+                  <div class="ui-head">
+                    <svg class="ui-icon ui-toggles__ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5v-6h11v6M2.5 10.5h11M5 7.5V5h4v2.5"></path></svg>
+                    <div class="ui-title">No vender hasta reparar</div>
+                    <span class="ui-spacer"></span>
+                    <div class="ui-meta" data-tg-count="">3 de 4</div>
+                  </div>
+                  <ul class="ui-toggles__list">
+                    <li class="ui-tg"><span class="ui-tg__text"><span class="ui-tg__label">Habitación 108</span><span class="ui-tg__sub">Fuga en el lavabo · De camino</span></span><button class="ui-switch is-on" type="button" role="switch" aria-checked="true" aria-label="No vender la habitación 108"><i></i></button></li>
+                    <li class="ui-tg"><span class="ui-tg__text"><span class="ui-tg__label">Habitación 412</span><span class="ui-tg__sub">La tarjeta no abre · Avisado</span></span><button class="ui-switch is-on" type="button" role="switch" aria-checked="true" aria-label="No vender la habitación 412"><i></i></button></li>
+                    <li class="ui-tg"><span class="ui-tg__text"><span class="ui-tg__label">Habitación 214</span><span class="ui-tg__sub">No enfría · se puede ocupar</span></span><button class="ui-switch" type="button" role="switch" aria-checked="false" aria-label="No vender la habitación 214"><i></i></button></li>
+                    <li class="ui-tg"><span class="ui-tg__text"><span class="ui-tg__label">Habitación 330</span><span class="ui-tg__sub">Ducha sin agua caliente</span></span><button class="ui-switch is-on" type="button" role="switch" aria-checked="true" aria-label="No vender la habitación 330"><i></i></button></li>
+                  </ul>
+                </div>
+              </div></div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="grid">
+        <article class="card card--row card--open span-6 m-nolift">
+          <h3>Junta los partes de varios hoteles</h3>
+          <p>Un técnico entra en todos sus hoteles con una sola cuenta. Cada parte lleva el nombre de su hotel.</p>
+          <div class="panel panel--device">
+            <div class="stage stage--fade-br"><div class="at-corner" style="--ax:24px;--ay:28px">
+              <div class="ui ui-panel ui-win ui-win--compact is-ui-held" data-ui="window" data-ui-opts="{&quot;compact&quot;:true}" data-open="Avisado" data-work="De camino" data-done="Resuelto" data-ui-still="">
+                <div class="ui-win__bar">
+                  <span class="ui-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="ui-win__crumb">Javi <i>/</i> <b>Todos mis hoteles</b></span>
+                  <span class="ui-spacer"></span>
+                </div>
+                <div class="ui-win__body">
+                  <div class="ui-win__main">
+                    <div class="ui-win__cols" aria-hidden="true"><span>Hotel</span><span>Parte</span><span>Estado</span><span>Hace</span></div>
+                    <ul class="ui-win__rows">
+                      <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="1">HS</span><span class="ui-win__who">Hotel Sol</span><span class="ui-win__sub">Hab. 214 · no enfría</span><span class="ui-win__st is-you" data-st="">Urgente</span><span class="ui-win__age">4 min</span></li>
+                      <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="3">SP</span><span class="ui-win__who">Sol Playa</span><span class="ui-win__sub">Hab. 12 · salta el diferencial</span><span class="ui-win__st" data-st="">De camino</span><span class="ui-win__age">8 min</span></li>
+                      <li class="ui-win__row" data-row=""><span class="ui-avatar" data-tone="1">HS</span><span class="ui-win__who">Hotel Sol</span><span class="ui-win__sub">Hab. 412 · cerradura</span><span class="ui-win__st is-done" data-st="">Resuelto</span><span class="ui-win__age">12 min</span></li>
+                      <li class="ui-win__row is-sel" data-row=""><span class="ui-avatar" data-tone="3">SP</span><span class="ui-win__who">Sol Playa</span><span class="ui-win__sub">Restaurante · cámara</span><span class="ui-win__st is-work" data-st="">De camino</span><span class="ui-win__age">2 h</span></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div></div>
+          </div>
+        </article>
+        <article class="card card--row card--open span-6 m-nolift">
+          <h3>Guarda el historial de cada avería</h3>
+          <p>Quién avisó, quién fue y a qué hora, paso a paso. Nadie tiene que acordarse de nada.</p>
+          <div class="panel">
+            <div class="stage stage--fade-b"><div class="at-rise fit to-edge" style="--fit-max:340px;--ax:max(24px, 50% - 170px);--ay:40px;--ay-sm:24px">
+              <div class="ui ui-panel ui-checks is-ui-held" data-ui="checklist" data-ui-still="">
+                <div class="ui-checks__head">
+                  <div class="ui-title">Hab. 214 · historial</div>
+                  <span class="ui-spacer"></span>
+                  <div class="ui-meta" data-checks-count="">3 de 4</div>
+                </div>
+                <div class="ui-checks__bar"><i data-checks-bar="" style="--k:0.75"></i></div>
+                <ul class="ui-checks__list">
+                  <li class="ui-check is-done"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"></path></svg></span><span class="ui-check__label">9:12 · Lucía abre el parte</span></li>
+                  <li class="ui-check is-done"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"></path></svg></span><span class="ui-check__label">9:18 · Javi va de camino</span></li>
+                  <li class="ui-check is-done"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"></path></svg></span><span class="ui-check__label">9:27 · Javi empieza a reparar</span></li>
+                  <li class="ui-check"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"></path></svg></span><span class="ui-check__label">Resuelto, con nota del técnico</span></li>
+                </ul>
+              </div>
+            </div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="informes" aria-labelledby="informes-h">
+    <div class="wrap">
+      <div class="grid">
+        <div class="span-5 stack-5">
+          <h2 id="informes-h">Busca cualquier avería y saca su informe</h2>
+          <p class="t-lead">Busca por habitación, tipo de avería, nombre o código, también en partes de hace meses. Cada parte tiene un informe PDF para mandar por WhatsApp o correo.</p>
+          <ul class="rows">
+            <li><span class="rows__name">Filtro por fecha: hoy, ayer, 7 o 30 días</span></li>
+            <li><span class="rows__name">Tiempo hasta que sale el técnico y de reparación</span></li>
+            <li><span class="rows__name">Búsqueda sin tildes: «fontaneria» también vale</span></li>
+          </ul>
+          <p><a class="link" href="#pasos">Ver cómo se da de alta el equipo</a></p>
+        </div>
+        <div class="frame frame--split span-6 start-7" data-visual="" data-fx="grain-gradient" data-fx-seed="11" data-fx-palette="{&quot;bg&quot;:&quot;#cdd6c6&quot;,&quot;surface&quot;:&quot;#dce3d6&quot;,&quot;ink&quot;:&quot;#262d24&quot;,&quot;accent&quot;:&quot;#6c8e63&quot;}" data-fx-params="{&quot;speed&quot;:0.25,&quot;grainMotion&quot;:0}" data-fx-mounted="grain-gradient"><canvas width="626" height="501" class="fx-canvas is-baked" aria-hidden="true" style="position: absolute; inset: 0px; width: 100%; height: 100%; display: block; z-index: -1; pointer-events: none; border-radius: inherit;"></canvas>
+          <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ay:40px">
+            <div class="ui ui-doc is-ui-held" data-ui="doc" data-ui-still="">
+              <article class="ui-doc__page">
+                <div class="ui-doc__label">Informe PT-3FA92C1B · Hotel Sol</div>
+                <div class="ui-doc__title">Habitación 214 · Climatización</div>
+                <div class="ui-doc__text">Avisó Lucía, de recepción, a las 9:12. <mark class="ui-doc__mark is-on">Javi salió a los 6 minutos</mark> y la reparación duró 32.</div>
+                <div class="ui-doc__text">Qué se hizo: <mark class="ui-doc__mark is-seen" data-kind="Nota del técnico" data-msg="Filtro cambiado y ventilador revisado." data-where="Javi, 9:59">filtro cambiado</mark> y ventilador revisado. La habitación no se bloqueó.</div>
+                <div class="ui-doc__text">Prioridad urgente. Foto del mando adjunta al parte.</div>
+                <div class="ui-doc__text">Resuelto a las 9:59, 47 minutos después del aviso.</div>
+              </article>
+              <aside class="ui-doc__note ui-panel is-on" aria-live="polite" style="top: 133px;">
+                <div class="ui-doc__kind"><span class="ui-doc__dot"></span><span data-doc-kind="">Tiempo de salida</span></div>
+                <div class="ui-doc__msg" data-doc-msg="">6 minutos desde el aviso hasta «Voy para allá».</div>
+                <div class="ui-doc__where" data-doc-where="">Historial del parte</div>
+              </aside>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section statement" id="idea" aria-labelledby="idea-h">
+    <div class="wrap">
+      <div data-moment="liquid-type" class="section-head mo-lt" style="max-width:none" data-moment-mounted="1">
+        <h2 class="mo-lt__type" id="idea-h">Cada avería, del aviso a la reparación, sin llamadas</h2>
+        <p class="t-lead">Avisaya nace en la recepción de un hotel, para recepción, limpieza, mantenimiento y dirección.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pasos" aria-labelledby="pasos-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="pasos-h">Da de alta a tu equipo en 3 pasos</h2>
+      </div>
+      <div class="grid">
+        <article class="card card--row span-4 m-nolift">
+          <span class="step-num">1</span>
+          <h3>Crea el hotel</h3>
+          <p>Administración crea el hotel en la app y recibe su código de 6 letras.</p>
+          <div class="panel">
+            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:340px;--ax:max(24px, 50% - 170px);--ay:40px;--ay-sm:24px" data-ui-loop="">
+              <div class="ui ui-panel ui-checks" data-ui="checklist">
+                <div class="ui-checks__head">
+                  <div class="ui-title">Alta de Hotel Sol</div>
+                  <span class="ui-spacer"></span>
+                  <div class="ui-meta" data-checks-count="">2 de 3</div>
+                </div>
+                <div class="ui-checks__bar"><i data-checks-bar="" style="--k: 0.6666666666666666;"></i></div>
+                <ul class="ui-checks__list">
+                  <li class="ui-check is-done"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"></path></svg></span><span class="ui-check__label">Crear la cuenta</span></li>
+                  <li class="ui-check is-done"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"></path></svg></span><span class="ui-check__label">Crear Hotel Sol</span></li>
+                  <li class="ui-check"><span class="ui-check__box"><svg viewBox="0 0 16 16"><path d="m4.5 8.2 2.3 2.3 4.7-5"></path></svg></span><span class="ui-check__label">Copiar el código A7F3K2</span></li>
+                </ul>
+              </div>
+            </div></div>
+          </div>
+        </article>
+        <article class="card card--row span-4 m-nolift">
+          <span class="step-num">2</span>
+          <h3>Comparte el código</h3>
+          <p>Cada persona se registra con su correo y escribe el código del hotel.</p>
+          <div class="panel">
+            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:340px;--ax:max(24px, 50% - 170px);--ay:40px;--ay-sm:24px">
+              <div class="ui ui-panel ui-chat is-ui-held" data-ui="chat" data-ui-still="">
+                <div class="ui-head"><span class="ui-agent" aria-hidden="true"></span><div class="ui-title">Equipo Hotel Sol</div><span class="ui-spacer"></span></div>
+                <div class="ui-chat__body">
+                  <div class="ui-msg ui-msg--me" data-chat-q=""><span class="ui-msg__text">Descargad Avisaya y entrad con el código A7F3K2.</span></div>
+                  <div class="ui-msg ui-msg--bot" data-chat-a=""><span class="ui-agent ui-msg__av" aria-hidden="true"></span><span class="ui-msg__col"><span class="ui-chat__answer"><span class="ui-chat__w">Hecho,</span> <span class="ui-chat__w">solicitud</span> <span class="ui-chat__w">enviada</span> <span class="ui-chat__w">como</span> <b><span class="ui-chat__w">Técnico</span></b><span class="ui-chat__w">.</span></span></span></div>
+                </div>
+                <div class="ui-chat__input"><span class="ui-chat__ph">Escribe un mensaje</span><span class="ui-chat__send" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 13V3.5M3.8 7.5 8 3.3l4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+              </div>
+            </div></div>
+          </div>
+        </article>
+        <article class="card card--row span-4 m-nolift">
+          <span class="step-num">3</span>
+          <h3>Aprueba cada solicitud</h3>
+          <p>Administración ve nombre, correo y departamento, y aprueba o rechaza.</p>
+          <div class="panel">
+            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:380px;--ax:24px;--ay:calc(100% - 180px);--ay-sm:calc(100% - 180px)">
+              <div class="ui ui-notify is-ui-held" data-ui="notify" data-ui-still="">
+                <ul class="ui-notify__list" data-notify-list="">
+                  <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="4">MR</span><span class="ui-note__text"><span class="ui-note__title">Solicitud de acceso<time>ahora</time></span><span class="ui-note__body">Marta Ruiz · Técnico</span></span></li>
+                  <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="2">LG</span><span class="ui-note__text"><span class="ui-note__title">Lucía aprobada<time>1 d</time></span><span class="ui-note__body">Recepción · Hotel Sol</span></span></li>
+                  <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="5">JV</span><span class="ui-note__text"><span class="ui-note__title">Javi aprobado<time>1 d</time></span><span class="ui-note__body">Técnico · 2 hoteles</span></span></li>
+                </ul>
+              </div>
+            </div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="preguntas" aria-labelledby="preguntas-h">
+    <div class="wrap">
+      <div class="grid">
+        <div class="span-5 stack-4">
+          <h2 id="preguntas-h">Preguntas sobre la app</h2>
+          <p class="muted">Lo que suelen preguntar recepción y dirección antes de probarla.</p>
+          <p><a class="link" href="mailto:hola@avisaya.example?subject=Pregunta%20sobre%20Avisaya">Escríbenos</a></p>
+          <div class="panel faq__panel">
+            <div class="stage stage--fade-b"><div class="at-rise fit" style="--fit-max:400px;--ax:max(24px, 50% - 200px);--ay:32px;--ay-sm:20px" data-ui-loop="">
+              <div class="ui ui-panel ui-search" data-ui="search">
+                <div class="ui-search__field">
+                  <svg class="ui-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="m10.5 10.5 3 3"></path></svg>
+                  <span class="ui-search__q"><span data-search-q="">fontaneria</span><i class="ui-search__caret"></i></span>
+                </div>
+                <div class="ui-search__group">Hotel Sol y Sol Playa</div>
+                <ul class="ui-search__list" data-search-list="">
+                  <li class="ui-search__row is-sel"><span class="ui-search__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"></path><path d="M9 2.5v3h3"></path></svg></span><span class="ui-search__t">Hab. 108 · <b>Fontanería</b></span><span class="ui-search__m">Sol</span></li>
+                  <li class="ui-search__row"><span class="ui-search__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"></path><path d="M9 2.5v3h3"></path></svg></span><span class="ui-search__t">Hab. 330 · <b>Fontanería</b></span><span class="ui-search__m">Sol Playa</span></li>
+                  <li class="ui-search__row"><span class="ui-search__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"></path><path d="M9 2.5v3h3"></path></svg></span><span class="ui-search__t">Hab. 412 · <b>Fontanería</b></span><span class="ui-search__m">Sol</span></li>
+                </ul>
+              </div>
+            </div></div>
+          </div>
+        </div>
+        <div class="faq span-6 start-7">
+          <div class="faq__item"><h3>¿Hace falta instalar la app?</h3><p>Solo la app de Avisaya en cada móvil, iPhone o Android. Cada persona entra con su correo y su contraseña.</p></div>
+          <div class="faq__item"><h3>¿Sirve para varios hoteles?</h3><p>Sí. Una cuenta puede estar en varios hoteles y cambiar de uno a otro tocando su nombre. Cada aviso dice de qué hotel es.</p></div>
+          <div class="faq__item"><h3>¿La app se conecta a las reservas?</h3><p>No. Avisaya lleva los partes de mantenimiento; las reservas siguen en el programa que ya usáis.</p></div>
+          <div class="faq__item"><h3>¿Los otros hoteles ven mis averías?</h3><p>No. Cada hotel ve solo sus partes, sus fotos y su equipo. Un técnico ve los hoteles en los que trabaja y ninguno más.</p></div>
+          <div class="faq__item"><h3>¿Cuánto cuesta la app?</h3><p>Precio a consultar, según el número de hoteles. Pide una demo y te lo contamos.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer closing" id="contact" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="closing__cta close--type">
+      <div class="section-head">
+        <h2 id="close-h">Prueba Avisaya en tu hotel</h2>
+        <p>Escríbenos y te enseñamos cómo funciona con tu equipo.</p>
+      </div>
+      <a class="btn btn--primary btn--xl btn--wide" href="mailto:hola@avisaya.example?subject=Demo%20de%20Avisaya">Pedir una demo<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"></path><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"></path></svg></a>
+    </div>
+    <div class="closing__links">
+      <div class="grid">
+        <div class="span-4 stack-4">
+          <a class="nav__logo" href="#top"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>Avisaya</a>
+          <p class="footer__lede">Partes de mantenimiento para hoteles.</p>
+        </div>
+        <div class="span-2 footer__col"><h3>La app</h3><ul><li><a href="#partes">Partes</a></li><li><a href="#funciones">Funciones</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Informes</h3><ul><li><a href="#informes">Informes</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Equipo</h3><ul><li><a href="#pasos">Equipo</a></li><li><a href="#preguntas">Preguntas</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Contacto</h3><ul><li><a href="mailto:hola@avisaya.example?subject=Pregunta%20sobre%20Avisaya">Escríbenos</a></li></ul></div>
+      </div>
+      <div class="footer__legal">
+        <span>© 2026 Avisaya</span>
+        <div class="socials"></div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="assets/system.js"></script>
+<script type="module" src="assets/motion/motion.js"></script>
+<script type="module" src="assets/layout/layout.js"></script>
+
+
+<svg width="0" height="0" aria-hidden="true" style="position: absolute; pointer-events: none;"><filter id="mo-lt-1" x="-5%" y="-20%" width="110%" height="140%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.006 0.013" numOctaves="1" seed="7" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap></filter></svg></body></html>

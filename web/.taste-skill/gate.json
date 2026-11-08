@@ -1,0 +1,560 @@
+{
+ "start": "2026-11-08T14:57:15.474Z",
+ "round": 0,
+ "idle": 0,
+ "errors": 0,
+ "status": "done",
+ "history": [
+  {
+   "at": "2026-11-08T15:24:45.199Z",
+   "mode": "hook",
+   "host": "claude",
+   "status": "fail",
+   "fails": 8,
+   "round": 0,
+   "reused": false,
+   "stopHookActive": false,
+   "decision": "block",
+   "reason": "8 FAILs remain (not a round: the gate has not been run by hand in this build yet):"
+  },
+  {
+   "at": "2026-11-08T15:29:44.819Z",
+   "mode": "hook",
+   "host": "claude",
+   "status": "fail",
+   "fails": 4,
+   "round": 0,
+   "reused": false,
+   "stopHookActive": true,
+   "decision": "block",
+   "reason": "4 FAILs remain (not a round: the gate has not been run by hand in this build yet):"
+  },
+  {
+   "at": "2026-11-08T15:31:13.726Z",
+   "mode": "done",
+   "status": "done",
+   "reason": "enséñamela ya",
+   "round": 0
+  }
+ ],
+ "max": 3,
+ "marker": {
+  "page": "index.html",
+  "url": null,
+  "root": null,
+  "kind": "software",
+  "category": "app de averías para hoteles",
+  "primary": "Pedir una demo",
+  "rounds": 3,
+  "start": "2026-11-08T14:57:15.474Z",
+  "by": "gate.mjs --start"
+ },
+ "roundKey": "e5b3b3d4b173906f:da39a3ee",
+ "roundFree": true,
+ "idleFree": false,
+ "blockKey": "e5b3b3d4b173906f:da39a3ee",
+ "fp": "e5b3b3d4b173906f",
+ "page": "index.html",
+ "found": {
+  "fails": [
+   {
+    "check": "copy-headings",
+    "where": "div.group > div.grid > article.card.card--row:nth-of-type(1) > h3 \"Avisa al técnico al momento\"",
+    "msg": "\"Avisa al técnico al momento\" names no product, part, place or section (3 headings like it; at most one brand line per page) (and 2 more like it: \"Bloquea habitaciones sin\", \"Guarda el historial de c\")",
+    "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "copy-headings"
+    ],
+    "wheres": [
+     "div.group > div.grid > article.card.card--row:nth-of-type(1) > h3 \"Avisa al técnico al momento\""
+    ]
+   },
+   {
+    "check": "spill",
+    "where": "div.panel > div.stage.stage--fade-b > div.at-rise.fit > div.ui.ui-panel \"Hab. 214 · historial 3 de 4 9:12 · Lucía\"",
+    "msg": "runs 92px past the bottom edge of the panel it sits on (div.panel.panel--device > div.stage.stage--fade-br > div.at-corner > div.ui.ui-panel)",
+    "fix": "keep the box inside the panel it starts on: shrink it, or grow the panel to hold it",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "spill"
+    ],
+    "wheres": [
+     "div.panel > div.stage.stage--fade-b > div.at-rise.fit > div.ui.ui-panel \"Hab. 214 · historial 3 de 4 9:12 · Lucía\""
+    ]
+   },
+   {
+    "check": "section-gaps",
+    "where": "main#top > section.hero.hero--product / section#partes",
+    "msg": "117px between these sections, -75% against the median 462px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-gaps"
+    ],
+    "wheres": [
+     "main#top > section.hero.hero--product / section#partes"
+    ]
+   },
+   {
+    "check": "off-viewport",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > button.nav__toggle",
+    "msg": "at 320px wide it runs 1px past the screen's right edge (cut there: the page clips what runs past it)",
+    "fix": "keep it inside the screen at this width: let it shrink, wrap or stack",
+    "widths": [
+     320
+    ],
+    "from": "consistency",
+    "ids": [
+     "off-viewport"
+    ],
+    "wheres": [
+     "header.nav.nav--centre > div.wrap.nav__bar > button.nav__toggle"
+    ]
+   }
+  ],
+  "warns": [
+   {
+    "check": "nav",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > a.nav__logo \"Avisaya\"",
+    "msg": "the nav is lopsided: its first item starts 6px inside the content's edge (80px), while its last ends on the other edge",
+    "fix": "start the nav's first item and end its last on the content's two edges",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "overlap-text",
+    "where": "div.stage.stage--fade-b > div.at-corner.to-edge > div.ui.ui-doc > aside.ui-doc__note.ui-panel \"Tiempo de salida 6 minutos desde el avis\"",
+    "msg": "inside div.ui.ui-doc, a box sits on the mock's own text and hides it mid-line (\"Qué se hizo: filtro cambiado y\") (and 1 more like it: \"Tiempo de salida 6 minut\")",
+    "fix": "move the box off the text (or the text off the box)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cut-text",
+    "where": "div.ui.ui-notify > ul.ui-notify__list > li.ui-note:nth-of-type(3) > span.ui-avatar.ui-note__av \"JV\"",
+    "msg": "cut 5px at the bottom by the overflow of div.group > div.grid > article.card.card--row:nth-of-type(1) > div.panel: a fragment run out through its panel's edge (and 1 more like it: \"Hab. 108 · fuga en el la\")",
+    "fix": "give the text room: no overflow clipping a line, no line past its box",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "no-visual",
+    "where": "section#preguntas \"Preguntas sobre la app\"",
+    "msg": "pictures, effects and mocks cover 21% of this section; a feature section needs a visual (about 25% or more)",
+    "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-headings",
+    "where": "div.wrap > div.grid > article.card.card--row:nth-of-type(1) > h3 \"Crea el hotel\"",
+    "msg": "the card title \"Crea el hotel\" names no product, part, place or section (3 card titles like it) (and 2 more like it: \"Comparte el código\", \"Aprueba cada solicitud\")",
+    "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-buttons",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > div.nav__actions > a.btn.btn--primary \"Pedir una demo\"",
+    "msg": "\"Pedir una demo\" does not start with a verb (book, buy, try, start, get, see...) (and 1 more like it: \"Ver cómo funciona\")",
+    "fix": "label buttons with a verb and what the visitor gets (\"Book a room\", \"Start free trial\")",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "text-contrast",
+    "where": "div.app__pane.app__pane--open > div.ui.ui-panel > div.ui-chat__input > span.ui-chat__ph \"Escribe una nota\"",
+    "msg": "22 lines of text in drawn mocks read under 4.5:1 (7 colour pairs), the worst \"Escribe una nota\" in #768580 on #e5ebe9 at 3.2:1",
+    "fix": "lift the mocks' muted text (labels, meta, initials) to 4.5:1 on their own panel, or set it larger",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "main#top > section.hero.hero--product / section#partes",
+    "msg": "139px between these sections, -54% against the median 299px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "section#partes / section#funciones",
+    "msg": "uneven space at the edge of a band: 72px outside its edge, 115px inside it (the space on either side of a change of ground reads as one gap only when the two match)",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "section#funciones / section#informes",
+    "msg": "uneven space at the edge of a band: 115px outside its edge, 72px inside it (the space on either side of a change of ground reads as one gap only when the two match)",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-labels",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > a.nav__logo \"Avisaya\"",
+    "msg": "\"Avisaya\" opens a section headed \"App de averías para hoteles\"",
+    "fix": "name each nav link after the heading of the section it opens",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-labels",
+    "where": "div.wrap.nav__bar > nav.nav__links > div.nav__item:nth-of-type(1) > a.nav__link \"Partes\"",
+    "msg": "\"Partes\" opens a section headed \"Todas las averías del hotel en una lista\"",
+    "fix": "name each nav link after the heading of the section it opens",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-labels",
+    "where": "div.wrap.nav__bar > nav.nav__links > div.nav__item:nth-of-type(2) > a.nav__link \"Funciones\"",
+    "msg": "\"Funciones\" opens a section headed \"La app de mantenimiento, a la vista de todo el hot\"",
+    "fix": "name each nav link after the heading of the section it opens",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "label-centre",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > div.nav__actions > a.btn.btn--primary \"Pedir una demo\"",
+    "msg": "its label sits 18px off-centre (25px of room at the left, 43px at the right)",
+    "fix": "centre the label in its button, or fill the empty side with an icon",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "fade-cut",
+    "where": "ul.ui-notify__list > li.ui-note:nth-of-type(3) > span.ui-note__text > span.ui-note__title \"Javi va de camino 1 h\"",
+    "msg": "2 lines of div.ui.ui-notify fade out under its edge (\"Javi va de camino 1 h\", \"1 h\"): drawn at a fraction of #0f1f1c on #fdffff, half-erased",
+    "fix": "fit the mock's rows inside its panel (fewer rows, a taller panel), or end the fade below the last whole row: no row half-erased",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "fade-cut",
+    "where": "ul.ui-notify__list > li.ui-note:nth-of-type(3) > span.ui-note__text > span.ui-note__title \"Javi aprobado 1 d\"",
+    "msg": "2 lines of div.ui.ui-notify fade out under its edge (\"Javi aprobado 1 d\", \"1 d\"): drawn at a fraction of #0f1f1c on #fcffff, half-erased",
+    "fix": "fit the mock's rows inside its panel (fewer rows, a taller panel), or end the fade below the last whole row: no row half-erased",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-length",
+    "where": "section#preguntas \"Preguntas sobre la app\"",
+    "msg": "1 section over 90 words a screen outside the UI mocks (\"Preguntas sobre la app\" 140); 60 words a screen across the page (481 words in 8 screens): a tech page says it in about 80 or fewer",
+    "fix": "cut every section to its heading, one line and the product UI: the UI says the rest; no second paragraph, no list of feature sentences",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-current",
+    "where": "header.nav.nav--centre",
+    "msg": "the nav stays on screen with 5 links to the page's sections, but never marks the one you are in (no link changes as the page scrolls)",
+    "fix": "mark the link of the section on screen (a colour, a weight or a line under it) as the visitor scrolls",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "button-contrast",
+    "where": "div.hero-text.hero__in > div.hero__head > div.btn-row > a.btn.btn--secondary \"Ver cómo funciona\"",
+    "msg": "the button \"Ver cómo funciona\" (#dae0de) stands only 1.19:1 off the ground around it: it reads as part of the ground, or as switched off",
+    "fix": "give the button a fill that stands at least 1.5:1 off what is around it, or an outline in the ink",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "loop-cycle",
+    "where": "div.span-5.stack-4 > div.panel.faq__panel > div.stage.stage--fade-b > div.at-rise.fit",
+    "msg": "a fragment loop of 1.0 s: under the 2.5-4 s cycle, it reads as blinking",
+    "fix": "set the loop's cycle to 2.5-4 s (--m-cycle) with every keyframe on it, repeating",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "empty-area",
+    "where": "footer#contact \"Prueba Avisaya en tu hotel\"",
+    "msg": "36% of the section is empty: 256px of empty rows between its content, in its 720px of rows (WARN over 35%, FAIL over 50%)",
+    "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "action-repeat",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > div.nav__actions > a.btn.btn--primary \"pedir una demo\"",
+    "msg": "\"pedir una demo\" shows 2 times on the first screen at 1440px (nav, hero): the nav's button and the hero's; nothing else on the screen may repeat it",
+    "fix": "show the action once a screen besides the nav's button: the hero's, the close's or the phone bar's, never all at once",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-air",
+    "where": "section#funciones / section#informes",
+    "msg": "512px of air between the content of these two sections: 128-480px (64-600px WARN) (SR-3)",
+    "fix": "keep 128-480px of air between the content of neighbouring sections (112-420px on a phone): the sections' padding (--padt, --padb)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "overlap-text",
+    "where": "div.ui.ui-doc > aside.ui-doc__note.ui-panel > div.ui-doc__kind > span:nth-of-type(2) \"Tiempo de salida\"",
+    "msg": "inside div.ui.ui-doc, a box sits on the mock's own text and hides it mid-line (\"Informe PT-3FA92C1B · Hotel So\") (and 1 more like it: \"Tiempo de salida 6 minut\")",
+    "fix": "move the box off the text (or the text off the box)",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cut-text",
+    "where": "ul.ui-notify__list > li.ui-note:nth-of-type(3) > span.ui-note__text > span.ui-note__body \"Hoy en Sol Playa\"",
+    "msg": "cut 13px at the bottom by the overflow of div.group > div.grid > article.card.card--row:nth-of-type(1) > div.panel: a fragment run out through its panel's edge (and 1 more like it: \"La tarjeta no abre · Avi\")",
+    "fix": "give the text room: no overflow clipping a line, no line past its box",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cut-text",
+    "where": "div.ui-win__main > ul.ui-win__rows > li.ui-win__row:nth-of-type(2) > span.ui-win__sub \"Hab. 12 · salta el diferencial\"",
+    "msg": "shortened with an ellipsis",
+    "fix": "give the text room: no overflow clipping a line, no line past its box",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cut-text",
+    "where": "div.at-corner.to-edge > div.ui.ui-doc > article.ui-doc__page > div.ui-doc__text:nth-of-type(6) \"Resuelto a las 9:59, 47 minutos después \"",
+    "msg": "cut 4px at the bottom by the overflow of section#informes > div.wrap > div.grid > div.frame.frame--split: a fragment run out through its panel's edge",
+    "fix": "give the text room: no overflow clipping a line, no line past its box",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cut-text",
+    "where": "div.ui.ui-panel > ul.ui-search__list > li.ui-search__row:nth-of-type(3) > span.ui-search__t \"Hab. 412 · Fontanería\"",
+    "msg": "cut 13px at the bottom by the overflow of div.wrap > div.grid > div.span-5.stack-4 > div.panel.faq__panel: a fragment run out through its panel's edge (and 2 more like it: \"Fontanería\", \"Sol\")",
+    "fix": "give the text room: no overflow clipping a line, no line past its box",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cta",
+    "where": "section#pasos \"Da de alta a tu equipo en 3 pasos\"",
+    "msg": "a section over 1.5 screens long with no link or button in it",
+    "fix": "add the action: a button in the hero, one on every priced item, one in the closing section",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "text-contrast",
+    "where": "div.ui-win__main > ul.ui-win__rows > li.ui-win__row:nth-of-type(3) > span.ui-win__st \"Resuelto\"",
+    "msg": "8 lines of text in drawn mocks read under 4.5:1 (4 colour pairs), the worst \"Resuelto\" in #788782 on #e2eae7 at 3.07:1",
+    "fix": "lift the mocks' muted text (labels, meta, initials) to 4.5:1 on their own panel, or set it larger",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "section#preguntas / footer#contact",
+    "msg": "681px between these sections, +47% against the median 462px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "proximity",
+    "where": "section#informes > div.wrap > div.grid > div.frame.frame--split \"Busca cualquier avería y saca su informe\"",
+    "msg": "stacked at this width, the visual starts 14px under the text and buttons above it (\"Busca cualquier avería y saca \"): it reads glued to them",
+    "fix": "give the stacked split the section's own gap between text and visual (40px or more on a phone)",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "fade-cut",
+    "where": "ul.ui-notify__list > li.ui-note:nth-of-type(3) > span.ui-note__text > span.ui-note__title \"3 partes resueltos 1 h\"",
+    "msg": "2 lines of div.ui.ui-notify fade out under its edge (\"3 partes resueltos 1 h\", \"1 h\"): drawn at a fraction of #0f1f1c on #fdffff, half-erased",
+    "fix": "fit the mock's rows inside its panel (fewer rows, a taller panel), or end the fade below the last whole row: no row half-erased",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "fade-cut",
+    "where": "div.ui-win__main > ul.ui-win__rows > li.ui-win__row:nth-of-type(2) > span.ui-win__st \"De camino\"",
+    "msg": "2 lines of div.ui.ui-panel fade out under its edge (\"De camino\", \"Resuelto\"): drawn at a fraction of #5a6b66 on #fdffff, half-erased",
+    "fix": "fit the mock's rows inside its panel (fewer rows, a taller panel), or end the fade below the last whole row: no row half-erased",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "empty-area",
+    "where": "section#idea \"Cada avería, del aviso a la reparación, \"",
+    "msg": "48% of the section is empty: 336px under its last (div.section-head.mo-lt), in its 700px of rows (WARN over 35%, FAIL over 50%)",
+    "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   }
+  ],
+  "crashed": [],
+  "seconds": {
+   "consistency": 133,
+   "layout": 3
+  }
+ },
+ "open": [
+  {
+   "check": "copy-headings",
+   "where": "div.group > div.grid > article.card.card--row:nth-of-type(1) > h3 \"Avisa al técnico al momento\"",
+   "msg": "\"Avisa al técnico al momento\" names no product, part, place or section (3 headings like it; at most one brand line per page) (and 2 more like it: \"Bloquea habitaciones sin\", \"Guarda el historial de c\")",
+   "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "copy-headings"
+   ],
+   "wheres": [
+    "div.group > div.grid > article.card.card--row:nth-of-type(1) > h3 \"Avisa al técnico al momento\""
+   ]
+  },
+  {
+   "check": "spill",
+   "where": "div.panel > div.stage.stage--fade-b > div.at-rise.fit > div.ui.ui-panel \"Hab. 214 · historial 3 de 4 9:12 · Lucía\"",
+   "msg": "runs 92px past the bottom edge of the panel it sits on (div.panel.panel--device > div.stage.stage--fade-br > div.at-corner > div.ui.ui-panel)",
+   "fix": "keep the box inside the panel it starts on: shrink it, or grow the panel to hold it",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "spill"
+   ],
+   "wheres": [
+    "div.panel > div.stage.stage--fade-b > div.at-rise.fit > div.ui.ui-panel \"Hab. 214 · historial 3 de 4 9:12 · Lucía\""
+   ]
+  },
+  {
+   "check": "section-gaps",
+   "where": "main#top > section.hero.hero--product / section#partes",
+   "msg": "117px between these sections, -75% against the median 462px",
+   "fix": "use one gap between sections (all within 25% of each other)",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-gaps"
+   ],
+   "wheres": [
+    "main#top > section.hero.hero--product / section#partes"
+   ]
+  },
+  {
+   "check": "off-viewport",
+   "where": "header.nav.nav--centre > div.wrap.nav__bar > button.nav__toggle",
+   "msg": "at 320px wide it runs 1px past the screen's right edge (cut there: the page clips what runs past it)",
+   "fix": "keep it inside the screen at this width: let it shrink, wrap or stack",
+   "widths": [
+    320
+   ],
+   "from": "consistency",
+   "ids": [
+    "off-viewport"
+   ],
+   "wheres": [
+    "header.nav.nav--centre > div.wrap.nav__bar > button.nav__toggle"
+   ]
+  }
+ ],
+ "waived": [],
+ "warnCount": 35,
+ "at": "2026-11-08T15:31:13.727Z",
+ "session": "0a06e406-b58d-5638-a5fd-4403347ea52c",
+ "doneReason": "enséñamela ya"
+}
