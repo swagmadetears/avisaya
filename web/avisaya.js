@@ -93,7 +93,7 @@
 
   // desplazamiento suave, como en tasteskill.dev (solo con ratón o trackpad; el móvil usa el suyo)
   let lenis = null;
-  if (!reduced && window.Lenis) {
+  if (!reduced && window.Lenis && matchMedia('(pointer: fine)').matches) {
     lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.9, smoothWheel: true });
     const raf = t => { lenis.raf(t); requestAnimationFrame(raf); };
     requestAnimationFrame(raf);
@@ -120,7 +120,7 @@
     drumRaf = 0;
     drumPos += (drumTarget - drumPos) * 0.14;
     if (Math.abs(drumTarget - drumPos) < 0.001) drumPos = drumTarget;
-    const fs = parseFloat(getComputedStyle(items[0]).fontSize) || 60;
+    const fs = Math.max(...items.map(li => li.offsetHeight)) || 60;   // las frases de dos líneas dejan más sitio
     items.forEach((li, i) => {
       const o = i - drumPos, a = Math.abs(o);
       li.style.transform = `translateY(calc(-50% + ${(o * fs * 1.25).toFixed(2)}px)) rotateX(${clamp(-o * 22, -80, 80).toFixed(2)}deg) scale(${(1 - Math.min(a, 3) * 0.08).toFixed(4)})`;

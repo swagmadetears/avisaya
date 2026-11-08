@@ -141,7 +141,7 @@
     background: radial-gradient(55% 35% at 50% 50%, rgba(228,86,27,.10), rgba(228,86,27,0) 70%); }
   .drum__grid { display: grid; grid-template-rows: auto 1fr auto; height: 100%; padding-top: calc(var(--nav) + 40px); padding-bottom: 40px; }
   .drum__label { text-align: center; color: var(--p-accent); }
-  .drum__wheel { position: relative; perspective: 900px; }
+  .drum__wheel { position: relative; perspective: 900px; overflow: hidden; -webkit-mask: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent); mask: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent); }
   .drum__list { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; }
   .drum__item { position: absolute; left: 0; right: 0; top: 50%; text-align: center; white-space: nowrap;
     font: 600 clamp(30px, 5.6vw, 88px)/1 var(--font-display); letter-spacing: -0.035em; color: var(--ink);
@@ -156,7 +156,20 @@
   .drum__meta { display: flex; justify-content: space-between; gap: var(--s-5); color: var(--muted); font-size: var(--t-small); }
   .drum__count b { color: var(--ink); font-weight: 600; }
   .drum__cap { text-align: right; max-width: 36ch; color: var(--ink); transition: opacity 300ms; }
-  @media (max-width: 639px) { .drum__item { white-space: normal; padding-inline: 20px; } .drum__meta { flex-direction: column; } .drum__cap { text-align: left; } }
+  @media (max-width: 639px) {
+    .drum__item { white-space: normal; padding-inline: 12px; font-size: 30px; line-height: 1.08; }
+    .drum__wheel::before { font-size: 30px; height: 2.5em; }
+    .drum__meta { flex-direction: column; gap: 6px; } .drum__cap { text-align: left; }
+    #top > section.section { min-height: 0; height: auto; padding-bottom: 72px; }
+    #top > section.section.g2 > .wrap { row-gap: var(--s-7); }
+    #top > section.drum { height: 360svh; } #top > section.story { height: 340svh; }
+    .story__stage { height: 56svh; }
+    .todo__card { padding: var(--s-5); }
+    footer.closing { min-height: 0; height: auto; }
+    .foot { flex-direction: column; align-items: flex-start; }
+    .closing__links .foot__links { display: grid !important; grid-template-columns: 1fr 1fr; gap: var(--s-3) var(--s-6); }
+    .av-bg { opacity: .45; }
+  }
   /* la historia: los pasos a la izquierda, la pantalla real a la derecha */
   .story { height: 400svh; }
   .story__pin { position: sticky; top: 0; height: 100svh; overflow: clip; display: grid; align-items: center; }
@@ -210,7 +223,18 @@
   footer.closing { border-top: 0; }
 
   /* fondo de partículas: detrás de todo; las secciones dejan ver el fondo */
-  .av-particles { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; filter: blur(1.5px); }
+  .av-bg { position: fixed; left: -10vw; top: -10vh; width: 120vw; height: 120vh; z-index: 0; pointer-events: none; filter: blur(48px) saturate(1.1); opacity: .55; }
+  /* cabecera y pie en negro liso: el fondo animado solo en el cuerpo */
+  .nav { background: #0a0e0d !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .closing__links { position: relative; background: #0a0e0d; box-shadow: 0 0 0 100vmax #0a0e0d; clip-path: inset(0 -100vmax -100vmax); padding-top: var(--s-7); }
+  /* tarjetas de cristal oscuro sobre el fondo */
+  #top .card, .todo__card, .story__stage, .app.ui { background: rgba(13,18,17,.72) !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  #inicio::before { opacity: .55; }
+  /* pie: una fila de enlaces */
+  .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-5); }
+  .closing__links .foot__links { display: flex !important; flex-direction: row !important; flex-wrap: wrap; gap: var(--s-2) var(--s-6); list-style: none; margin: 0; padding: 0; }
+  .closing__links .foot__links li { margin: 0; }
+  .foot__links a { color: var(--muted); transition: color 200ms; } .foot__links a:hover { color: var(--ink); }
   #top, footer.closing { position: relative; z-index: 1; }
   #top > section, footer.closing, .ground-inverse:not(.nav) { background: transparent !important; }
   /* desplazamiento suave */
@@ -218,7 +242,7 @@
   html.lenis.lenis-smooth { scroll-behavior: auto !important; }
   .lenis.lenis-stopped { overflow: hidden; }
   /* separación entre apartados sin líneas duras */
-  .nav { border-bottom-color: rgba(255,255,255,.06) !important; background: rgba(10,14,13,.72) !important; -webkit-backdrop-filter: saturate(140%) blur(14px); backdrop-filter: saturate(140%) blur(14px); }
+  .nav { border-bottom-color: rgba(255,255,255,.06) !important; }
   .card { border-color: rgba(255,255,255,.07); }
   /* chat: escribiendo… */
   [data-av="chat"] .ui-msg { transition: opacity 520ms ease, transform 620ms cubic-bezier(.2,.75,.15,1); }
@@ -711,15 +735,9 @@
       <a class="btn btn--primary btn--xl btn--wide" href="mailto:hola@avisaya.example?subject=Demo%20de%20Avisaya">Pedir una demo<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
     </div>
     <div class="closing__links">
-      <div class="grid">
-        <div class="span-4 stack-4">
-          <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
-          <p class="footer__lede">Partes de mantenimiento para hoteles.</p>
-        </div>
-        <div class="span-2 footer__col"><h3>La app</h3><ul><li><a href="#partes">Partes</a></li><li><a href="#funciones">Funciones</a></li></ul></div>
-        <div class="span-2 footer__col"><h3>Informes</h3><ul><li><a href="#informes">Informes</a></li></ul></div>
-        <div class="span-2 footer__col"><h3>Equipo</h3><ul><li><a href="#pasos">Equipo</a></li><li><a href="#preguntas">Preguntas</a></li></ul></div>
-        <div class="span-2 footer__col"><h3>Contacto</h3><ul><li><a href="mailto:hola@avisaya.example?subject=Pregunta%20sobre%20Avisaya">Escríbenos</a></li></ul></div>
+      <div class="foot">
+        <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
+        <ul class="foot__links"><li><a href="#partes">Partes</a></li><li><a href="#funciones">Funciones</a></li><li><a href="#informes">Informes</a></li><li><a href="#pasos">Equipo</a></li><li><a href="#preguntas">Preguntas</a></li><li><a href="mailto:hola@avisaya.example?subject=Pregunta%20sobre%20Avisaya">Escríbenos</a></li></ul>
       </div>
       <div class="footer__legal">
         <span>&copy; 2026 Avisaya</span>
@@ -733,7 +751,7 @@
 <script type="module" src="assets/motion/motion.js"></script>
 <script type="module" src="assets/layout/layout.js"></script>
 <script src="vendor/lenis.min.js" defer></script>
-<script src="particles.js" defer></script>
+<script src="fondo.js" defer></script>
 <script src="phones.js" defer></script>
 <script src="avisaya.js" defer></script>
 </body>
