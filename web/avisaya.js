@@ -141,7 +141,7 @@
       if (k !== lastStep) {
         lastStep = k;
         steps.forEach((s, i) => s.classList.toggle('is-on', i === k));
-        shots.forEach((s, i) => s.classList.toggle('is-on', i === k));
+        if (window.AvPhones) window.AvPhones.show(k);
         if (badge) badge.textContent = k + 1;
       }
     }
