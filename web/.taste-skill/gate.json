@@ -59,6 +59,14 @@
    "decision": "allow",
    "reason": "no build is active here",
    "stopHookActive": true
+  },
+  {
+   "at": "2026-11-08T15:40:40.899Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
   }
  ],
  "max": 3,

@@ -26,9 +26,9 @@
 <link rel="stylesheet" href="assets/icons/icon.css">
 <style>
 :root {
-  --p-bg: #eef3f1; --p-surface: #e2eae7; --p-ink: #0f1f1c; --p-muted: #5a6b66;
+  --p-bg: #0a0e0d; --p-surface: #141a19; --p-ink: #f2f5f4; --p-muted: #a7b1ae;
   --p-accent: #e4561b; --p-accent-ink: #111111; --p-action: #e4561b; --p-action-ink: #111111;
-  --p-inv-bg: #0a0e0d; --p-inv-surface: #151b1a; --p-inv-ink: #f2f5f4; --p-inv-muted: #a7b1ae;
+  --p-inv-bg: #050707; --p-inv-surface: #121716; --p-inv-ink: #f2f5f4; --p-inv-muted: #a7b1ae;
   --p-inv-accent: #e4561b; --p-inv-accent-ink: #111111; --p-inv-action: #e4561b; --p-inv-action-ink: #111111;
   --font-display: "Reddit Sans", system-ui, sans-serif;
   --font-text: "Reddit Sans", system-ui, sans-serif;
@@ -85,8 +85,16 @@
   #funciones .card p { color: var(--muted); }
   #idea .mo-lt__type { color: var(--ink); }
   #idea .t-lead { color: var(--muted); }
-  html { scroll-behavior: smooth; }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  html, body { background: var(--p-bg); }
+  /* los recuadros de las tarjetas, también oscuros */
+  html[data-ground] { --ground-bg: #111816; --ground-surface: #1c2623; --ground-ink: #f2f5f4; --ground-muted: #a7b1ae; --ground-accent: #e4561b; }
+  /* una pestaña por apartado: los demás quedan fuera de la pantalla (conservan su tamaño) */
+  .av-off { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; transform: translateX(-300vw) !important; visibility: hidden !important; pointer-events: none !important; }
+  .av-tab-in { animation: av-tab 560ms cubic-bezier(.2,.75,.15,1) both; }
+  @keyframes av-tab { from { opacity: 0; transform: translateY(24px); } }
+  @media (prefers-reduced-motion: reduce) { .av-tab-in { animation: none; } }
+  /* los cuadros se mueven siempre: sin botón de pausa */
+  .loop-pause, .ui-pause { display: none !important; }
   /* cabecera: la sección en la que estás, subrayada en naranja */
   .nav__link[aria-current="true"] { color: var(--p-accent); }
   .nav__link[aria-current="true"]::after { content: ""; position: absolute; left: var(--s-3); right: var(--s-3); bottom: -2px; height: 2px; border-radius: 2px; background: currentColor; }
@@ -165,8 +173,9 @@
 <header class="nav nav--centre ground-inverse">
   <div class="wrap nav__bar">
     <a class="skip-link" href="#top">Saltar al contenido</a>
-    <a class="nav__logo" href="#top"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
+    <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
     <nav class="nav__links" aria-label="Principal">
+      <div class="nav__item"><a class="nav__link" href="#inicio">Inicio</a></div>
       <div class="nav__item"><a class="nav__link" href="#partes">Partes</a></div>
       <div class="nav__item"><a class="nav__link" href="#funciones">Funciones</a></div>
       <div class="nav__item"><a class="nav__link" href="#informes">Informes</a></div>
@@ -185,7 +194,7 @@
 </header>
 
 <main id="top">
-  <section class="hero hero--product" data-enter aria-labelledby="hero-h">
+  <section class="hero hero--product" id="inicio" data-enter aria-labelledby="hero-h">
     <div class="wrap"><div class="hero-text hero__in">
       <div class="hero__head">
         <div>
@@ -398,7 +407,7 @@
           </ul>
           <p><a class="link" href="#pasos">Ver cómo se da de alta el equipo</a></p>
         </div>
-        <div class="frame frame--split span-6 start-7" data-visual data-fx="grain-gradient" data-fx-seed="11" data-fx-palette='{"bg":"#cdd6c6","surface":"#dce3d6","ink":"#262d24","accent":"#6c8e63"}' data-fx-params='{"speed":0.25,"grainMotion":0}'>
+        <div class="frame frame--split span-6 start-7" data-visual data-fx="grain-gradient" data-fx-seed="11" data-fx-palette='{"bg":"#0e1513","surface":"#1a2522","ink":"#f2f5f4","accent":"#e4561b"}' data-fx-params='{"speed":0.25,"grainMotion":0}'>
           <div class="stage stage--fade-b"><div class="at-corner to-edge" style="--ay:40px">
             <div class="ui ui-doc" data-ui="doc">
               <article class="ui-doc__page">
@@ -543,7 +552,7 @@
     <div class="closing__links">
       <div class="grid">
         <div class="span-4 stack-4">
-          <a class="nav__logo" href="#top"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
+          <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
           <p class="footer__lede">Partes de mantenimiento para hoteles.</p>
         </div>
         <div class="span-2 footer__col"><h3>La app</h3><ul><li><a href="#partes">Partes</a></li><li><a href="#funciones">Funciones</a></li></ul></div>
