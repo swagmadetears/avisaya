@@ -35,6 +35,22 @@
    "status": "done",
    "reason": "enséñamela ya",
    "round": 0
+  },
+  {
+   "at": "2026-11-08T15:31:58.355Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-08T15:33:29.660Z",
+   "mode": "hook",
+   "host": "claude",
+   "decision": "allow",
+   "reason": "no build is active here",
+   "stopHookActive": false
   }
  ],
  "max": 3,
