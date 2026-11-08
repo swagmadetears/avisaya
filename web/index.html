@@ -28,7 +28,7 @@
 :root {
   --p-bg: #eef3f1; --p-surface: #e2eae7; --p-ink: #0f1f1c; --p-muted: #5a6b66;
   --p-accent: #e4561b; --p-accent-ink: #111111; --p-action: #e4561b; --p-action-ink: #111111;
-  --p-inv-bg: #0f1f1c; --p-inv-surface: #1c2b28; --p-inv-ink: #eef3f1; --p-inv-muted: #919b98;
+  --p-inv-bg: #0a0e0d; --p-inv-surface: #151b1a; --p-inv-ink: #f2f5f4; --p-inv-muted: #a7b1ae;
   --p-inv-accent: #e4561b; --p-inv-accent-ink: #111111; --p-inv-action: #e4561b; --p-inv-action-ink: #111111;
   --font-display: "Reddit Sans", system-ui, sans-serif;
   --font-text: "Reddit Sans", system-ui, sans-serif;
@@ -77,6 +77,45 @@
     .app > .app__pane--list { display: none; }
     .app > .app__pane + .app__pane { border-top: 0; }
   }
+
+  /* contraste: cabecera, funciones, la frase y el pie en casi negro */
+  .nav.ground-inverse { border-bottom-color: color-mix(in oklab, var(--ink) 14%, transparent); }
+  .nav.ground-inverse .btn--primary { color: #111; }
+  #funciones .card h3, #funciones .card p { color: var(--ink); }
+  #funciones .card p { color: var(--muted); }
+  #idea .mo-lt__type { color: var(--ink); }
+  #idea .t-lead { color: var(--muted); }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  /* cabecera: la sección en la que estás, subrayada en naranja */
+  .nav__link[aria-current="true"] { color: var(--p-accent); }
+  .nav__link[aria-current="true"]::after { content: ""; position: absolute; left: var(--s-3); right: var(--s-3); bottom: -2px; height: 2px; border-radius: 2px; background: currentColor; }
+  @media (min-width: 1024px) and (max-width: 1279px) { .nav--centre .nav__link { padding-inline: var(--s-2); font-size: 15px; } }
+  /* preguntas desplegables: se abren y cierran con animación */
+  :root { interpolate-size: allow-keywords; }
+  .desplegables > details { display: grid; gap: var(--s-2); padding: var(--s-5) 0; border-bottom: 1px solid var(--line); }
+  .desplegables > details:first-child { padding-top: 0; }
+  .desplegables summary { list-style: none; font: 500 var(--t-lead)/1.4 var(--font-text); }
+  .desplegables summary::-webkit-details-marker { display: none; }
+  .desplegables p { max-width: 64ch; padding-top: var(--s-2); }
+  @media (max-width: 639px) { .desplegables > details { padding: var(--s-4) 0; } }
+  #preguntas .desplegables > details > summary { pointer-events: auto; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: var(--s-4); transition: color 200ms var(--ease); }
+  #preguntas .desplegables > details > summary:hover { color: var(--p-accent); }
+  #preguntas .desplegables > details::details-content { block-size: 0; overflow: clip; content-visibility: hidden; transition: block-size 420ms cubic-bezier(.2,.7,.2,1), content-visibility 420ms allow-discrete; }
+  #preguntas .desplegables > details[open]::details-content { block-size: auto; content-visibility: visible; }
+  #preguntas .desplegables > details[open] > p { animation: faq-in 420ms cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes faq-in { from { opacity: 0; transform: translateY(-6px); } }
+  .faq__icon { position: relative; flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line-strong); transition: transform 320ms cubic-bezier(.2,.7,.2,1), background-color 200ms, border-color 200ms; }
+  .faq__icon::before, .faq__icon::after { content: ""; position: absolute; left: 50%; top: 50%; width: 11px; height: 1.6px; margin: -0.8px 0 0 -5.5px; background: currentColor; border-radius: 2px; }
+  .faq__icon::after { transform: rotate(90deg); transition: transform 320ms cubic-bezier(.2,.7,.2,1); }
+  details[open] > summary .faq__icon { transform: rotate(180deg); background: var(--p-ink); border-color: var(--p-ink); color: var(--p-bg); }
+  details[open] > summary .faq__icon::after { transform: rotate(0deg); }
+  /* textos que entran al llegar a cada sección (solo con JS y sin «reducir movimiento») */
+  .av-anim .av-split .av-w { display: inline-block; overflow: clip; overflow-clip-margin: 0.12em; vertical-align: top; padding-bottom: 0.06em; margin-bottom: -0.06em; }
+  .av-anim .av-split .av-w > span { display: inline-block; transform: translateY(105%); transition: transform 760ms cubic-bezier(.2,.75,.15,1); transition-delay: calc(var(--i) * 45ms); }
+  .av-anim .av-in .av-split .av-w > span, .av-anim .av-split.av-in .av-w > span { transform: none; }
+  .av-anim .av-up { opacity: 0; transform: translateY(18px); transition: opacity 700ms ease, transform 800ms cubic-bezier(.2,.75,.15,1); transition-delay: calc(240ms + var(--d, 0) * 90ms); }
+  .av-anim .av-in .av-up, .av-anim .av-up.av-in { opacity: 1; transform: none; }
   /* una --p-h por grupo de tarjetas */
   #funciones .panel { --p-h: 336px; }
   #pasos .panel { --p-h: 300px; }
@@ -98,8 +137,8 @@
     #funciones-h .muted { display: none; }
     #pasos .panel { --p-h: max(220px, (200svh - 420px) / 3 - 150px); }
     #preguntas .grid > .span-5 { grid-column: 1 / span 5; }
-    #preguntas .faq { grid-column: 6 / -1; }
-    #preguntas .faq__panel { --p-h: 220px; }
+    #preguntas .desplegables { grid-column: 6 / -1; }
+    #preguntas .desplegables__panel { --p-h: 220px; }
   }
   @media (max-width: 1023px) {
     #idea .mo-lt__type { font-size: 13vw; line-height: 1; }
@@ -123,7 +162,7 @@
      effect: grain-gradient en el marco [data-visual] de #informes; card grounds: ninguno de la familia (paneles lisos)
      moments: liquid-type en #idea (sección propia, enunciado) -->
 
-<header class="nav nav--centre">
+<header class="nav nav--centre ground-inverse">
   <div class="wrap nav__bar">
     <a class="skip-link" href="#top">Saltar al contenido</a>
     <a class="nav__logo" href="#top"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
@@ -131,8 +170,10 @@
       <div class="nav__item"><a class="nav__link" href="#partes">Partes</a></div>
       <div class="nav__item"><a class="nav__link" href="#funciones">Funciones</a></div>
       <div class="nav__item"><a class="nav__link" href="#informes">Informes</a></div>
+      <div class="nav__item"><a class="nav__link" href="#idea">Sin llamadas</a></div>
       <div class="nav__item"><a class="nav__link" href="#pasos">Equipo</a></div>
       <div class="nav__item"><a class="nav__link" href="#preguntas">Preguntas</a></div>
+      <div class="nav__item"><a class="nav__link" href="#contact">Contacto</a></div>
     </nav>
     <div class="nav__actions">
       <a class="btn btn--primary" href="mailto:hola@avisaya.example?subject=Demo%20de%20Avisaya">Pedir una demo</a>
@@ -245,7 +286,7 @@
     </div>
   </section>
 
-  <section class="section g2 ground-surface" id="funciones" aria-labelledby="funciones-h">
+  <section class="section g2 ground-inverse" id="funciones" aria-labelledby="funciones-h">
     <div class="wrap">
       <div class="group">
         <div class="section-head">
@@ -380,7 +421,7 @@
     </div>
   </section>
 
-  <section class="section statement" id="idea" aria-labelledby="idea-h">
+  <section class="section statement ground-inverse" id="idea" aria-labelledby="idea-h">
     <div class="wrap">
       <div data-moment="liquid-type" class="section-head" style="max-width:none">
         <h2 class="mo-lt__type" id="idea-h">Cada avería, del aviso a la reparación, sin llamadas</h2>
@@ -478,19 +519,19 @@
             </div></div>
           </div>
         </div>
-        <div class="faq span-6 start-7">
-          <div class="faq__item"><h3>¿Hace falta instalar la app?</h3><p>Solo la app de Avisaya en cada móvil, iPhone o Android. Cada persona entra con su correo y su contraseña.</p></div>
-          <div class="faq__item"><h3>¿Sirve para varios hoteles?</h3><p>Sí. Una cuenta puede estar en varios hoteles y cambiar de uno a otro tocando su nombre. Cada aviso dice de qué hotel es.</p></div>
-          <div class="faq__item"><h3>¿La app se conecta a las reservas?</h3><p>No. Avisaya lleva los partes de mantenimiento; las reservas siguen en el programa que ya usáis.</p></div>
-          <div class="faq__item"><h3>¿Los otros hoteles ven mis averías?</h3><p>No. Cada hotel ve solo sus partes, sus fotos y su equipo. Un técnico ve los hoteles en los que trabaja y ninguno más.</p></div>
-          <div class="faq__item"><h3>¿Cuánto cuesta la app?</h3><p>Precio a consultar, según el número de hoteles. Pide una demo y te lo contamos.</p></div>
+        <div class="desplegables span-6 start-7">
+          <details class="faq__item" open><summary><span>¿Hace falta instalar la app?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Solo la app de Avisaya en cada móvil, iPhone o Android. Cada persona entra con su correo y su contraseña.</p></details>
+          <details class="faq__item"><summary><span>¿Sirve para varios hoteles?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Sí. Una cuenta puede estar en varios hoteles y cambiar de uno a otro tocando su nombre. Cada aviso dice de qué hotel es.</p></details>
+          <details class="faq__item"><summary><span>¿La app se conecta a las reservas?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>No. Avisaya lleva los partes de mantenimiento; las reservas siguen en el programa que ya usáis.</p></details>
+          <details class="faq__item"><summary><span>¿Los otros hoteles ven mis averías?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>No. Cada hotel ve solo sus partes, sus fotos y su equipo. Un técnico ve los hoteles en los que trabaja y ninguno más.</p></details>
+          <details class="faq__item"><summary><span>¿Cuánto cuesta la app?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Precio a consultar, según el número de hoteles. Pide una demo y te lo contamos.</p></details>
         </div>
       </div>
     </div>
   </section>
 </main>
 
-<footer class="footer closing" id="contact" aria-labelledby="close-h">
+<footer class="footer closing ground-inverse" id="contact" aria-labelledby="close-h">
   <div class="wrap">
     <div class="closing__cta close--type">
       <div class="section-head">
@@ -521,5 +562,6 @@
 <script type="module" src="assets/system.js"></script>
 <script type="module" src="assets/motion/motion.js"></script>
 <script type="module" src="assets/layout/layout.js"></script>
+<script src="avisaya.js" defer></script>
 </body>
 </html>
