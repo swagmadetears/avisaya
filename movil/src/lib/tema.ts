@@ -45,7 +45,7 @@ export const sombra = {
 
 /** Curvas y tiempos de las animaciones (resortes suaves, como en iOS). */
 export const movimiento = {
-  resorte: { damping: 18, stiffness: 220, mass: 0.9 },
+  resorte: { damping: 30, stiffness: 380, mass: 0.8, overshootClamping: true },
   resorteSuave: { damping: 22, stiffness: 140 },
   entrada: 360,
   escalonado: 45,

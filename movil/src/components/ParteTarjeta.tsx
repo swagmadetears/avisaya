@@ -168,7 +168,7 @@ function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onF
           <MaterialCommunityIcons name="file-document-outline" size={17} color={color.marca2} />
           <Text style={s.detalleTexto}>Detalle y PDF</Text>
         </Pulsable>
-        <Pulsable onPress={() => router.push(`/parte/chat/${p.id}`)} style={s.detalle} accessibilityRole="button" accessibilityLabel="Abrir el chat de esta avería">
+        <Pulsable onPress={() => router.push(`/conversacion/p/${p.id}`)} style={s.detalle} accessibilityRole="button" accessibilityLabel="Abrir el chat de esta avería">
           <MaterialCommunityIcons name="chat-processing-outline" size={17} color={color.acento} />
           <Text style={[s.detalleTexto, { color: color.acento }]}>Chat</Text>
         </Pulsable>

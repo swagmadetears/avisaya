@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { curvaApple } from '../components/movimiento';
 import Animated, { FadeInDown, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aviso, Boton, Campo, Etiqueta, Opcion } from '../components/ui';
@@ -161,7 +162,7 @@ export default function Nuevo() {
         <Campo etiqueta="Habitación o zona" value={habitacion} onChangeText={setHabitacion} placeholder="214" grande autoCorrect={false} maxLength={30} />
 
         {abiertos.length ? (
-          <Animated.View entering={FadeInDown.springify().damping(18)} exiting={FadeOut.duration(200)} style={s.yaHay}>
+          <Animated.View entering={FadeInDown.duration(300).easing(curvaApple)} exiting={FadeOut.duration(200)} style={s.yaHay}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <MaterialCommunityIcons name="alert-circle" size={20} color={color.curso} />
               <Text style={s.yaHayTitulo}>

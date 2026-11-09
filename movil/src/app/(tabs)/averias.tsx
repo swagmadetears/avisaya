@@ -2,9 +2,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Animated, Entra, LinearTransition, Pulsable, TarjetaEsqueleto } from '../../components/movimiento';
+import { Animated, Entra, LinearTransition, Pulsable, TarjetaEsqueleto, curvaApple } from '../../components/movimiento';
 import { Notificacion, type NotificacionRef } from '../../components/Notificacion';
 import { ParteTarjeta, type Accion } from '../../components/ParteTarjeta';
 import { Aviso, Boton } from '../../components/ui';
@@ -15,7 +15,7 @@ import { usePartes, type CambioParte } from '../../lib/partes';
 import { useSesion } from '../../lib/sesion';
 import { supabase } from '../../lib/supabase';
 import { Logo } from '../../components/Logo';
-import { color, esHabitacion, esHoy, fuente, ROLES, sombra, suave, type NombreIcono, type Parte } from '../../lib/tema';
+import { color, esHabitacion, esHoy, fuente, ROLES, suave, type NombreIcono, type Parte } from '../../lib/tema';
 
 const PRIO = { urgente: 0, normal: 1, baja: 2 } as const;
 const ORDEN = { en_camino: 0, en_curso: 1, pendiente: 2, esperando: 3, resuelto: 4 } as const;
@@ -224,67 +224,69 @@ export default function Averias() {
         : 'Nada por aquí.';
 
   const cabeceraLista = (
-    <View style={{ gap: 14 }}>
+    <View style={{ gap: 22, paddingBottom: 4 }}>
       {esAdmin && nSolicitudes > 0 ? (
-        <Pressable onPress={() => router.push('/equipo')} style={s.solicitudes} accessibilityRole="button">
-          <MaterialCommunityIcons name="account-clock-outline" size={24} color={color.curso} />
+        <Pulsable onPress={() => router.push('/equipo')} style={s.solicitudes} accessibilityRole="button">
+          <MaterialCommunityIcons name="account-clock-outline" size={22} color={color.curso} />
           <Text style={s.solicitudesTexto}>
-            {nSolicitudes === 1 ? '1 persona espera' : `${nSolicitudes} personas esperan`} tu aprobación para entrar
+            {nSolicitudes === 1 ? '1 persona espera' : `${nSolicitudes} personas esperan`} tu aprobación
           </Text>
-          <MaterialCommunityIcons name="chevron-right" size={22} color={color.curso} />
-        </Pressable>
+          <MaterialCommunityIcons name="chevron-right" size={20} color={color.curso} />
+        </Pulsable>
       ) : null}
-      {varios ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.hoteles}>
-          {[{ id: 'todos', nombre: 'Todos los hoteles' }, ...hoteles].map((h) => {
-            const activo = (h.id === 'todos' && !hotelSel) || h.id === hotelSel;
-            const n = todosPartes.filter((p) => p.estado !== 'resuelto' && (h.id === 'todos' || p.hotel_id === h.id)).length;
-            return (
-              <Pressable key={h.id} onPress={() => setVerHotel(h.id)} style={[s.hotelChip, activo && s.hotelChipActivo]} accessibilityRole="tab" accessibilityState={{ selected: activo }}>
-                <MaterialCommunityIcons name={h.id === 'todos' ? 'domain' : 'office-building-outline'} size={16} color={activo ? '#fff' : color.marca2} />
-                <Text style={[s.hotelChipTexto, activo && { color: '#fff' }]} numberOfLines={1}>
-                  {h.nombre}
-                </Text>
-                <Text style={[s.hotelChipNum, activo && { color: '#fff' }]}>{n}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+
+      {!esTecnico ? (
+        <Pulsable vibra="medio" onPress={() => router.push({ pathname: '/nuevo', params: { hotel: hotelSel ?? '' } })} style={s.avisar} accessibilityRole="button" accessibilityLabel="Avisar de una avería">
+          <View style={s.avisarIcono}>
+            <MaterialCommunityIcons name="plus" size={24} color={color.acento} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.avisarTitulo}>Avisar de una avería</Text>
+            <Text style={s.avisarSub}>Habitación, tipo y una foto. Le llega al técnico al momento.</Text>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={22} color="rgba(255,255,255,0.8)" />
+        </Pulsable>
       ) : null}
+
+      <View style={{ gap: 8 }}>
+        <Text style={s.seccion}>RESUMEN</Text>
+        <View style={s.resumen}>
+          {resumen.map((r) => (
+            <Pulsable key={r.texto} style={s.dato} vibra="seleccion" onPress={() => setFiltro(r.filtro)} accessibilityRole="button" accessibilityLabel={`${r.n} ${r.texto}`}>
+              <MaterialCommunityIcons name={r.icono} size={18} color={r.tono} />
+              <Text style={s.datoNum}>{r.n}</Text>
+              <Text style={s.datoTexto} numberOfLines={2}>
+                {r.texto}
+              </Text>
+            </Pulsable>
+          ))}
+        </View>
+        {bloqueadas.length && rol !== 'limpieza' ? (
+          <View style={s.noVender}>
+            <MaterialCommunityIcons name="bed-empty" size={16} color={color.curso} />
+            <Text style={s.bloqueadas} numberOfLines={2}>
+              No vender: <Text style={s.bloqueadasNums}>{bloqueadas.join(' · ')}</Text>
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
       <Tablon avisos={avisos} perfiles={perfiles} nombresHotel={varios && !hotelSel ? nombresHotel : undefined} hotelNuevo={hotelSel ?? hotel.id} onCerrar={cerrarAviso} />
 
-      <View style={s.resumen}>
-        {resumen.map((r) => (
-          <Pressable key={r.texto} style={s.dato} onPress={() => setFiltro(r.filtro)} accessibilityRole="button" accessibilityLabel={`${r.n} ${r.texto}`}>
-            <View style={[s.datoIcono, { backgroundColor: suave(r.tono, 0.14) }]}>
-              <MaterialCommunityIcons name={r.icono} size={19} color={r.tono} />
-            </View>
-            <View>
-              <Text style={s.datoNum}>{r.n}</Text>
-              <Text style={s.datoTexto}>{r.texto}</Text>
-            </View>
-          </Pressable>
-        ))}
+      <View style={{ gap: 10 }}>
+        <Text style={s.seccion}>PARTES</Text>
+        <View style={s.segmento}>
+          {filtros.map(([k, t, n]) => (
+            <Pulsable key={k} vibra="seleccion" encoge={0.98} onPress={() => setFiltro(k)} style={[s.segmentoOpcion, filtroActivo === k && s.segmentoActivo]} accessibilityRole="tab" accessibilityState={{ selected: filtroActivo === k }}>
+              <Text style={[s.segmentoTexto, filtroActivo === k && { color: color.tinta }]} numberOfLines={1}>
+                {t}
+                {n !== null ? ` ${n}` : ''}
+              </Text>
+            </Pulsable>
+          ))}
+        </View>
+        <Aviso texto={error ?? errorAccion} />
       </View>
-
-
-      {bloqueadas.length && rol !== 'limpieza' ? (
-        <Text style={s.bloqueadas}>
-          No vender: <Text style={s.bloqueadasNums}>{bloqueadas.join('  ·  ')}</Text>
-        </Text>
-      ) : null}
-
-      <View style={s.chips}>
-        {filtros.map(([k, t, n]) => (
-          <Pulsable key={k} vibra="seleccion" onPress={() => setFiltro(k)} style={[s.chip, filtroActivo === k && s.chipActivo]} accessibilityRole="tab" accessibilityState={{ selected: filtroActivo === k }}>
-            <Text style={[s.chipTexto, filtroActivo === k && { color: '#fff' }]}>
-              {t}
-              {n !== null ? <Text style={{ opacity: 0.7 }}> {n}</Text> : null}
-            </Text>
-          </Pulsable>
-        ))}
-      </View>
-      <Aviso texto={error ?? errorAccion} />
     </View>
   );
 
@@ -304,11 +306,6 @@ export default function Averias() {
           </Text>
           {varios ? <MaterialCommunityIcons name="chevron-down" size={18} color={color.apagado} /> : null}
         </Pulsable>
-        {!esTecnico ? (
-          <Pulsable vibra="medio" onPress={() => router.push({ pathname: '/nuevo', params: { hotel: hotelSel ?? '' } })} style={s.mas} accessibilityRole="button" accessibilityLabel="Avisar de una avería">
-            <MaterialCommunityIcons name="plus" size={24} color="#fff" />
-          </Pulsable>
-        ) : null}
       </View>
       <View style={s.titular}>
         <Text style={s.titulo}>Averías</Text>
@@ -319,7 +316,7 @@ export default function Averias() {
 
       <Animated.FlatList
         data={lista}
-        itemLayoutAnimation={LinearTransition.springify().damping(22).stiffness(180)}
+        itemLayoutAnimation={LinearTransition.duration(280).easing(curvaApple)}
         keyExtractor={(p) => p.id}
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, gap: 12, paddingBottom: insets.bottom + 110 }}
         ListHeaderComponent={cabeceraLista}
@@ -411,6 +408,16 @@ export default function Averias() {
 }
 
 const s = StyleSheet.create({
+  seccion: { fontFamily: fuente.textoFuerte, fontSize: 12.5, letterSpacing: 0.8, color: color.apagado, paddingHorizontal: 2 },
+  avisar: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 16, borderRadius: 20, borderCurve: 'continuous', backgroundColor: color.acento, boxShadow: '0 10px 24px rgba(255,106,43,0.28)' },
+  avisarIcono: { width: 44, height: 44, borderRadius: 14, borderCurve: 'continuous', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  avisarTitulo: { fontFamily: fuente.textoFuerte, fontSize: 17, color: '#fff' },
+  avisarSub: { fontFamily: fuente.texto, fontSize: 13, color: 'rgba(255,255,255,0.85)' },
+  noVender: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 9, borderRadius: 12, backgroundColor: suave(color.curso, 0.12) },
+  segmento: { flexDirection: 'row', backgroundColor: color.superficie, borderRadius: 12, borderCurve: 'continuous', padding: 3 },
+  segmentoOpcion: { flex: 1, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 4, borderRadius: 9 },
+  segmentoActivo: { backgroundColor: color.elevado, boxShadow: '0 2px 6px rgba(0,0,0,0.35)' },
+  segmentoTexto: { fontFamily: fuente.textoFuerte, fontSize: 13.5, color: color.apagado },
   barra: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingBottom: 6 },
   selector: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start' },
   logo: { width: 28, height: 28, borderRadius: 8, borderCurve: 'continuous', backgroundColor: color.acento, alignItems: 'center', justifyContent: 'center' },
@@ -419,16 +426,16 @@ const s = StyleSheet.create({
   titular: { paddingHorizontal: 16, paddingBottom: 10, gap: 2 },
   titulo: { fontFamily: fuente.tituloFuerte, fontSize: 34, color: color.tinta, letterSpacing: -0.8 },
   usuario: { fontFamily: fuente.texto, fontSize: 14, color: color.apagado },
-  resumen: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  dato: { flexBasis: '48%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: color.superficie, borderRadius: 14, padding: 12, ...sombra },
+  resumen: { flexDirection: 'row', gap: 8 },
+  dato: { flex: 1, alignItems: 'flex-start', gap: 4, backgroundColor: color.superficie, borderRadius: 16, borderCurve: 'continuous', paddingHorizontal: 10, paddingVertical: 10 },
   datoIcono: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-  datoNum: { fontFamily: fuente.tituloFuerte, fontSize: 22, color: color.tinta, lineHeight: 26 },
-  datoTexto: { fontFamily: fuente.textoMedio, fontSize: 12, color: color.apagado },
-  bloqueadas: { fontFamily: fuente.textoMedio, fontSize: 13.5, color: color.apagado },
+  datoNum: { fontFamily: fuente.tituloFuerte, fontSize: 22, color: color.tinta, lineHeight: 26, fontVariant: ['tabular-nums'] },
+  datoTexto: { fontFamily: fuente.textoMedio, fontSize: 11.5, color: color.apagado, lineHeight: 14 },
+  bloqueadas: { flex: 1, fontFamily: fuente.textoMedio, fontSize: 13.5, color: color.tinta },
   bloqueadasNums: { fontFamily: fuente.numero, color: color.pendiente },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   hoteles: { gap: 8, paddingRight: 8 },
-  solicitudes: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: suave(color.curso, 0.12), borderRadius: 14, padding: 14, borderWidth: 1.5, borderColor: suave(color.curso, 0.4) },
+  solicitudes: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: suave(color.curso, 0.12), borderRadius: 14, padding: 12, borderWidth: 1, borderColor: suave(color.curso, 0.4) },
   solicitudesTexto: { flex: 1, fontFamily: fuente.textoFuerte, fontSize: 14.5, color: color.tinta },
   opHotel: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, borderWidth: 1.5, borderColor: color.linea, backgroundColor: color.elevado },
   opHotelActivo: { borderColor: color.acento, backgroundColor: suave(color.acento, 0.08) },

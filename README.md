@@ -10,6 +10,7 @@ avisaya/
 ├── supabase/03_busqueda.sql        ← buscador de partes (pegar después del 01)
 ├── supabase/04_chat.sql            ← chat del equipo de cada hotel (pegar después del 03)
 ├── supabase/05_avisos.sql          ← avisos generales del tablón (pegar después del 04)
+├── supabase/06_chats.sql           ← bandeja de chats, chat global con técnicos y «leído» (pegar después del 05)
 └── movil/                    ← app para iPhone y Android (Expo / React Native)
 ```
 

@@ -129,7 +129,7 @@ export default function DetalleParte() {
           ) : null}
         </View>
 
-        <Pulsable onPress={() => router.push(`/parte/chat/${parte.id}`)} style={s.chat} accessibilityRole="button" accessibilityLabel="Abrir el chat de esta avería">
+        <Pulsable onPress={() => router.push(`/conversacion/p/${parte.id}`)} style={s.chat} accessibilityRole="button" accessibilityLabel="Abrir el chat de esta avería">
           <View style={s.chatIcono}>
             <MaterialCommunityIcons name="chat-processing-outline" size={22} color={color.acento} />
           </View>

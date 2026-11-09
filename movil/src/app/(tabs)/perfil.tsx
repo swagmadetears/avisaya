@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Constants from 'expo-constants';
 import { Alert, Linking, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Entra, Pulsable, toque } from '../../components/movimiento';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { curvaApple, Entra, Pulsable, suavizar, toque } from '../../components/movimiento';
 import { Aviso, Boton, Campo } from '../../components/ui';
 import { useSesion } from '../../lib/sesion';
 import { mensajeError, supabase } from '../../lib/supabase';
@@ -108,6 +109,11 @@ export default function PerfilPestana() {
     ]);
   }
 
+  const abrirCerrar = (v: typeof abierto) => {
+    suavizar();
+    setAbierto(v);
+  };
+
   const soporte = (asunto: string) => Linking.openURL(`mailto:hola@avisaya.example?subject=${encodeURIComponent(asunto)}`).catch(() => {});
   const inicioActual = hotelInicio === 'todos' ? 'Todos' : (hoteles.find((h) => h.id === hotelInicio)?.nombre ?? (perfil.rol === 'tecnico' ? 'Todos' : hotel.nombre));
 
@@ -131,14 +137,14 @@ export default function PerfilPestana() {
         </Entra>
 
         <Seccion titulo="Personalizar perfil" orden={1}>
-          <Fila icono="account-edit-outline" tono={color.camino} titulo="Tu nombre" valor={perfil.nombre} onPress={() => setAbierto(abierto === 'nombre' ? null : 'nombre')} abierto={abierto === 'nombre'} />
+          <Fila icono="account-edit-outline" tono={color.camino} titulo="Tu nombre" valor={perfil.nombre} onPress={() => abrirCerrar(abierto === 'nombre' ? null : 'nombre')} abierto={abierto === 'nombre'} />
           {abierto === 'nombre' ? (
-            <View style={s.desplegado}>
+            <Animated.View entering={FadeIn.duration(220).easing(curvaApple)} exiting={FadeOut.duration(140)} style={s.desplegado}>
               <Campo etiqueta="Cómo te ve el equipo" value={nombre} onChangeText={setNombre} maxLength={40} />
               <Aviso texto={error} />
               <Aviso texto={msg} tono={color.ok} />
               <Boton texto="Guardar nombre" tipo="principal" onPress={guardar} cargando={guardando} />
-            </View>
+            </Animated.View>
           ) : null}
           <Fila icono="badge-account-horizontal-outline" tono={color.espera} titulo="Departamento" valor={ROLES[perfil.rol]} />
           {hoteles.length > 1 ? (
@@ -180,11 +186,11 @@ export default function PerfilPestana() {
           ))}
           {modoNuevo === null ? (
             <>
-              <Fila icono="plus-circle-outline" tono={color.acento} titulo="Pedir acceso a otro hotel" onPress={() => setModoNuevo('codigo')} />
-              {perfil.rol === 'admin' ? <Fila icono="office-building-cog-outline" tono={color.acento} titulo="Crear un hotel nuevo" onPress={() => setModoNuevo('crear')} /> : null}
+              <Fila icono="plus-circle-outline" tono={color.acento} titulo="Pedir acceso a otro hotel" onPress={() => { suavizar(); setModoNuevo('codigo'); }} />
+              {perfil.rol === 'admin' ? <Fila icono="office-building-cog-outline" tono={color.acento} titulo="Crear un hotel nuevo" onPress={() => { suavizar(); setModoNuevo('crear'); }} /> : null}
             </>
           ) : (
-            <View style={s.desplegado}>
+            <Animated.View entering={FadeIn.duration(220).easing(curvaApple)} exiting={FadeOut.duration(140)} style={s.desplegado}>
               {modoNuevo === 'codigo' ? (
                 <Campo etiqueta="Código del otro hotel" value={codigo} onChangeText={(t) => setCodigo(t.toUpperCase())} placeholder="A7F3K2" autoCapitalize="characters" autoCorrect={false} grande maxLength={10} />
               ) : (
@@ -200,7 +206,7 @@ export default function PerfilPestana() {
                 <Boton texto="Cancelar" onPress={() => { setModoNuevo(null); setErrorHotel(''); }} style={{ flex: 1 }} />
                 <Boton texto={modoNuevo === 'codigo' ? 'Enviar solicitud' : 'Crear'} tipo="principal" onPress={anadirHotel} cargando={anadiendo} style={{ flex: 2 }} />
               </View>
-            </View>
+            </Animated.View>
           )}
           {msgHotel ? <Aviso texto={msgHotel} tono={color.ok} /> : null}
         </Seccion>
@@ -217,27 +223,27 @@ export default function PerfilPestana() {
         </Seccion>
 
         <Seccion titulo="Seguridad" orden={5}>
-          <Fila icono="lock-reset" tono={color.camino} titulo="Cambiar contraseña" onPress={() => setAbierto(abierto === 'clave' ? null : 'clave')} abierto={abierto === 'clave'} />
+          <Fila icono="lock-reset" tono={color.camino} titulo="Cambiar contraseña" onPress={() => abrirCerrar(abierto === 'clave' ? null : 'clave')} abierto={abierto === 'clave'} />
           {abierto === 'clave' ? (
-            <View style={s.desplegado}>
+            <Animated.View entering={FadeIn.duration(220).easing(curvaApple)} exiting={FadeOut.duration(140)} style={s.desplegado}>
               <Campo etiqueta="Contraseña nueva" value={clave} onChangeText={setClave} secureTextEntry autoCapitalize="none" placeholder="Al menos 8 caracteres" />
               <Campo etiqueta="Repítela" value={clave2} onChangeText={setClave2} secureTextEntry autoCapitalize="none" />
               <Aviso texto={errorClave} />
               <Aviso texto={msgClave} tono={color.ok} />
               <Boton texto="Guardar contraseña" tipo="principal" onPress={cambiarClave} cargando={cambiandoClave} />
-            </View>
+            </Animated.View>
           ) : null}
           <Fila icono="logout" tono={color.curso} titulo="Cerrar sesión" onPress={() => preguntarSalir(false)} />
           <Fila icono="cellphone-remove" tono={color.pendiente} titulo="Cerrar sesión en todos mis móviles" onPress={() => preguntarSalir(true)} />
         </Seccion>
 
         <Seccion titulo="Privacidad" orden={6}>
-          <Fila icono="shield-account-outline" tono={color.ok} titulo="Quién ve tus datos" onPress={() => setAbierto(abierto === 'privacidad' ? null : 'privacidad')} abierto={abierto === 'privacidad'} />
+          <Fila icono="shield-account-outline" tono={color.ok} titulo="Quién ve tus datos" onPress={() => abrirCerrar(abierto === 'privacidad' ? null : 'privacidad')} abierto={abierto === 'privacidad'} />
           {abierto === 'privacidad' ? (
-            <View style={s.desplegado}>
+            <Animated.View entering={FadeIn.duration(220).easing(curvaApple)} exiting={FadeOut.duration(140)} style={s.desplegado}>
               <Text style={s.texto}>Solo las personas aprobadas en tus hoteles ven tu nombre, tus partes, sus fotos y tus mensajes. Ningún otro hotel puede verlos.</Text>
               <Text style={s.texto}>Tu correo solo lo ve administración, para gestionar el acceso.</Text>
-            </View>
+            </Animated.View>
           ) : null}
           <Fila icono="account-remove-outline" tono={color.pendiente} titulo="Pedir que borren mi cuenta" onPress={() => soporte('Borrar mi cuenta de Avisaya')} />
         </Seccion>

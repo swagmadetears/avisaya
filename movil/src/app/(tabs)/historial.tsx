@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FiltroFecha } from '../../components/FiltroFecha';
-import { Animated, Entra, Esqueleto, LinearTransition, Pulsable } from '../../components/movimiento';
+import { Animated, Entra, Esqueleto, LinearTransition, Pulsable, curvaApple } from '../../components/movimiento';
 import { Aviso } from '../../components/ui';
 import { limites, SIN_FECHA, textoRango, type Rango } from '../../lib/fechas';
 import { useHotelElegido } from '../../lib/hotel-elegido';
@@ -137,7 +137,7 @@ export default function Historial() {
       <Animated.FlatList
         data={lista}
         keyExtractor={(p) => p.id}
-        itemLayoutAnimation={LinearTransition.springify().damping(22).stiffness(180)}
+        itemLayoutAnimation={LinearTransition.duration(280).easing(curvaApple)}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         ListHeaderComponent={cabecera}

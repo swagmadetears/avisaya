@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Pressable, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+import { LayoutAnimation, Platform, Pressable, UIManager, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   FadeInDown,
@@ -8,6 +8,7 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
   withRepeat,
   withSequence,
   withSpring,
@@ -16,6 +17,13 @@ import Animated, {
 import { color, movimiento } from '../lib/tema';
 
 const PressableAnimado = Animated.createAnimatedComponent(Pressable);
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) UIManager.setLayoutAnimationEnabledExperimental(true);
+
+/** Antes de abrir o cerrar algo: el resto de la pantalla se recoloca con la curva suave de iOS, sin rebote. */
+export function suavizar() {
+  LayoutAnimation.configureNext(LayoutAnimation.create(260, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
+}
 
 /** Un toque ligero en iOS (en Android la vibración de sistema ya es suficiente). */
 export function toque(tipo: 'ligero' | 'medio' | 'seleccion' | 'exito' | 'aviso' = 'ligero') {
@@ -65,17 +73,21 @@ export function Pulsable({ style, encoge = 0.97, vibra = 'ligero', onPressIn, on
   );
 }
 
-/** Aparece desde abajo con un resorte suave; `orden` escalona las filas de una lista. */
+/** Curva de iOS: arranca rápido y frena suave, sin rebotes. */
+export const curvaApple = Easing.bezier(0.25, 0.1, 0.25, 1);
+export const transicion = LinearTransition.duration(280).easing(curvaApple);
+
+/** Aparece con un fundido y un desplazamiento corto, sin rebote; `orden` escalona las filas de una lista.
+    Solo anima opacidad y posición (no la maquetación), así nunca descoloca a sus vecinos. */
 export function Entra({ children, orden = 0, style }: { children: ReactNode; orden?: number; style?: StyleProp<ViewStyle> }) {
   const reducido = useReducedMotion();
-  return (
-    <Animated.View
-      style={style}
-      entering={reducido ? undefined : FadeInDown.duration(movimiento.entrada).delay(Math.min(orden, 8) * movimiento.escalonado).springify().damping(20).stiffness(180)}
-      layout={reducido ? undefined : LinearTransition.springify().damping(22).stiffness(180)}>
-      {children}
-    </Animated.View>
-  );
+  const p = useSharedValue(reducido ? 1 : 0);
+  useEffect(() => {
+    if (reducido) return;
+    p.set(withDelay(Math.min(orden, 8) * 35, withTiming(1, { duration: 320, easing: curvaApple })));
+  }, [p, orden, reducido]);
+  const anim = useAnimatedStyle(() => ({ opacity: p.get(), transform: [{ translateY: (1 - p.get()) * 8 }] }));
+  return <Animated.View style={[style, anim]}>{children}</Animated.View>;
 }
 
 /** Bloque gris que «respira» mientras carga (en lugar de una ruedecita). */

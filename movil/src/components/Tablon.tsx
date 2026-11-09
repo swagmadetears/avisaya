@@ -5,7 +5,7 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import type { AvisoGeneral } from '../lib/avisos';
 import { color, fuente, hace, suave, type Perfil } from '../lib/tema';
-import { Pulsable, toque } from './movimiento';
+import { Pulsable, toque, curvaApple } from './movimiento';
 
 type Props = {
   avisos: AvisoGeneral[];
@@ -55,7 +55,7 @@ export function Tablon({ avisos, perfiles, nombresHotel, hotelNuevo, onCerrar }:
             const autor = perfiles[a.autor_id];
             const tono = a.importante ? color.pendiente : color.curso;
             return (
-              <Animated.View key={a.id} entering={FadeIn.duration(320)} exiting={FadeOutUp.duration(260)} layout={LinearTransition.springify().damping(20)}>
+              <Animated.View key={a.id} entering={FadeIn.duration(320)} exiting={FadeOutUp.duration(260)} layout={LinearTransition.duration(280).easing(curvaApple)}>
                 <Pulsable onLongPress={() => preguntarCerrar(a)} onPress={() => preguntarCerrar(a)} style={[s.tarjeta, { borderColor: suave(tono, 0.45) }, cerrando === a.id && { opacity: 0.5 }]} accessibilityRole="button" accessibilityHint="Toca para darlo por resuelto">
                   <View style={s.fila}>
                     <View style={[s.punto, { backgroundColor: tono }]} />
