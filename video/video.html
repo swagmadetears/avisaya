@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Avisaya · vídeo</title>
+<style>
+@font-face { font-family: Sora; font-weight: 700; src: url(Sora_700Bold.ttf); }
+@font-face { font-family: Sora; font-weight: 800; src: url(Sora_800ExtraBold.ttf); }
+@font-face { font-family: Figtree; font-weight: 400; src: url(Figtree_400Regular.ttf); }
+@font-face { font-family: Figtree; font-weight: 600; src: url(Figtree_600SemiBold.ttf); }
+@font-face { font-family: Figtree; font-weight: 700; src: url(Figtree_700Bold.ttf); }
+@font-face { font-family: Plex; font-weight: 600; src: url(IBMPlexMono_600SemiBold.ttf); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #07090A; }
+body { font-family: Figtree, sans-serif; color: #F3F5F5; }
+#escena { position: absolute; inset: 0; overflow: hidden; }
+#fondo { position: absolute; inset: -10%; filter: blur(90px); }
+.mancha { position: absolute; border-radius: 50%; }
+.capa { position: absolute; inset: 0; opacity: 0; }
+.centro { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.t-xl { font-family: Sora; font-weight: 800; font-size: 120px; letter-spacing: -4px; line-height: 1; }
+.t-l { font-family: Sora; font-weight: 800; font-size: 76px; letter-spacing: -2.5px; line-height: 1.05; }
+.t-m { font-family: Figtree; font-weight: 400; font-size: 32px; color: #A7B1AE; line-height: 1.4; }
+.naranja { color: #FF6A2B; }
+.pal { display: inline-block; will-change: transform, opacity; }
+/* textos a la izquierda en las escenas con móvil */
+.izq { position: absolute; left: 150px; top: 0; bottom: 0; width: 900px; display: flex; flex-direction: column; justify-content: center; gap: 26px; }
+.paso { display: inline-flex; align-items: center; gap: 14px; font-family: Figtree; font-weight: 700; font-size: 24px; color: #FF6A2B; letter-spacing: 3px; text-transform: uppercase; }
+.paso b { width: 46px; height: 46px; border-radius: 50%; background: #FF6A2B; color: #fff; display: grid; place-items: center; font-family: Sora; letter-spacing: 0; font-size: 22px; }
+/* móvil */
+.movil { position: absolute; left: 1220px; top: 70px; width: 470px; height: 940px; border-radius: 74px; background: #1d2321; padding: 16px; box-shadow: 0 60px 120px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.12), inset 0 0 0 9px #272e2c; }
+.pantalla { position: relative; width: 100%; height: 100%; border-radius: 58px; overflow: hidden; background: #0E1312; }
+.isla { position: absolute; top: 14px; left: 50%; width: 130px; height: 36px; margin-left: -65px; border-radius: 20px; background: #000; z-index: 30; }
+.vista { position: absolute; inset: 0; opacity: 0; }
+.cab { padding: 74px 26px 18px; background: #131A19; border-bottom: 1px solid #222B29; }
+.kick { font-weight: 700; font-size: 15px; letter-spacing: 1.5px; color: #FF6A2B; }
+.titulo-app { font-family: Sora; font-weight: 700; font-size: 26px; margin-top: 4px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 5px 12px; border-radius: 10px; background: rgba(14,154,167,.16); color: #5FD0D9; font-weight: 600; font-size: 15px; }
+.cuerpo { padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+.etq { font-weight: 700; font-size: 13px; letter-spacing: 1.3px; color: #93A29E; margin-top: 6px; }
+.caja { background: #182120; border: 1.5px solid #26312E; border-radius: 16px; padding: 14px 16px; font-size: 19px; min-height: 54px; }
+.caja.foco { border-color: #FF6A2B; }
+.num { font-family: Plex; font-size: 30px; padding: 8px 16px; }
+.cursor { display: inline-block; width: 2px; height: 22px; background: #FF6A2B; vertical-align: -3px; margin-left: 2px; }
+.rej { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.tile { background: #182120; border: 1.5px solid #26312E; border-radius: 16px; padding: 12px 4px 10px; display: flex; flex-direction: column; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; }
+.tile i { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; }
+.tile svg { width: 22px; height: 22px; }
+.tile.sel { border-color: #22B8C4; background: rgba(14,154,167,.18); }
+.foto { height: 120px; border-radius: 16px; background: linear-gradient(135deg, #3b4a52, #222b30); display: flex; align-items: center; justify-content: center; gap: 10px; color: #93A29E; font-weight: 600; font-size: 16px; position: relative; overflow: hidden; }
+.foto .img { position: absolute; inset: 0; background: radial-gradient(60% 70% at 35% 40%, #8fa3ad, #4a5a62 60%, #2a3439); opacity: 0; }
+.foto .img::after { content: ""; position: absolute; left: 40%; top: 30%; width: 90px; height: 54px; border-radius: 10px; background: #e9eef0; box-shadow: 0 10px 20px rgba(0,0,0,.35); }
+.boton { position: absolute; left: 22px; right: 22px; bottom: 34px; height: 64px; border-radius: 20px; background: #FF6A2B; color: #fff; font-weight: 700; font-size: 19px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 12px 28px rgba(255,106,43,.35); }
+.aviso-ok { position: absolute; left: 50%; bottom: 116px; transform: translateX(-50%); background: #F3F5F5; color: #0E1312; padding: 12px 20px; border-radius: 99px; font-weight: 700; font-size: 16px; white-space: nowrap; opacity: 0; }
+/* técnico */
+.verde { background: linear-gradient(180deg, #0f3a34, #0b2b27); padding: 76px 26px 70px; }
+.verde small { color: rgba(255,255,255,.7); font-size: 16px; } .verde h4 { font-family: Sora; font-size: 24px; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: -48px 22px 0; position: relative; }
+.stat { background: #182120; border-radius: 16px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; box-shadow: 0 8px 18px rgba(0,0,0,.4); }
+.stat i { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; }
+.stat b { display: block; font-family: Sora; font-size: 24px; line-height: 1; } .stat span { font-size: 13px; color: #93A29E; }
+.tarjeta { background: #182120; border-radius: 20px; padding: 16px; border-left: 6px solid #FF5C4A; display: flex; flex-direction: column; gap: 10px; }
+.fila { display: flex; gap: 12px; align-items: center; }
+.hab { width: 62px; height: 62px; border: 1.5px solid #2C3835; border-radius: 14px; display: grid; place-items: center; text-align: center; line-height: 1; }
+.hab small { display: block; font-size: 10px; color: #7F8F8B; font-weight: 700; letter-spacing: 1px; } .hab b { font-family: Sora; font-size: 22px; }
+.tipo { font-family: Sora; font-size: 19px; font-weight: 700; }
+.tags { display: flex; gap: 6px; margin-top: 6px; } .tag { font-size: 11.5px; font-weight: 700; letter-spacing: 1px; padding: 4px 10px; border-radius: 99px; }
+.barras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; } .barras i { height: 6px; border-radius: 3px; background: #26312E; position: relative; overflow: hidden; } .barras i u { position: absolute; inset: 0; transform-origin: left; }
+.nombres { display: grid; grid-template-columns: repeat(4, 1fr); font-size: 12px; color: #7F8F8B; }
+.banner { position: absolute; left: 12px; right: 12px; top: 62px; z-index: 20; background: rgba(36,44,42,.97); border-radius: 26px; padding: 16px; display: flex; gap: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+.banner i { width: 46px; height: 46px; border-radius: 13px; background: #E5402F; display: grid; place-items: center; flex: none; }
+.banner small { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; letter-spacing: 1px; color: #93A29E; }
+.banner b { display: block; color: #FF7A68; font-size: 17px; margin: 3px 0; } .banner span { font-size: 15px; color: #A7B1AE; }
+.accion { margin: 6px 22px 0; height: 62px; border-radius: 18px; color: #fff; font-weight: 700; font-size: 19px; display: flex; align-items: center; justify-content: center; }
+.datos { margin: 14px 22px 0; background: #182120; border-radius: 18px; padding: 6px 16px; }
+.datos div { display: flex; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid #222B29; font-size: 16px; } .datos div:last-child { border: 0; } .datos span { color: #93A29E; }
+.tiempos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 14px 22px 0; }
+.tiempos div { background: #182120; border-radius: 16px; padding: 12px; } .tiempos span { display: block; font-size: 12.5px; color: #93A29E; min-height: 32px; } .tiempos b { font-family: Sora; font-size: 24px; }
+/* chat */
+.chatcab { padding: 70px 20px 14px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid #222B29; }
+.chatcab i { width: 40px; height: 40px; border-radius: 50%; background: #182120; display: grid; place-items: center; font-style: normal; font-size: 22px; }
+.chatcab b { font-size: 18px; } .chatcab span { display: block; font-size: 14px; color: #93A29E; }
+.msgs { position: absolute; left: 0; right: 0; top: 140px; bottom: 100px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; }
+.msg { max-width: 80%; display: flex; flex-direction: column; gap: 4px; opacity: 0; }
+.msg.mio { align-self: flex-end; align-items: flex-end; }
+.msg .autor { font-size: 13px; font-weight: 700; color: #F5A33B; margin-left: 12px; }
+.burbuja { padding: 11px 16px; border-radius: 22px; font-size: 18px; line-height: 1.35; }
+.mio .burbuja { background: #FF6A2B; color: #fff; border-bottom-right-radius: 7px; } .ajeno .burbuja { background: #232C35; border-bottom-left-radius: 7px; }
+.pie { display: flex; gap: 5px; align-items: center; font-size: 12.5px; color: #93A29E; margin: 0 8px; }
+.puntos { display: flex; gap: 6px; padding: 16px 18px; align-self: flex-start; width: auto; } .puntos i { width: 9px; height: 9px; border-radius: 50%; background: #F3F5F5; }
+.entrada { position: absolute; left: 14px; right: 14px; bottom: 30px; display: flex; gap: 10px; }
+.entrada .campo { flex: 1; background: #15191A; border-radius: 26px; padding: 14px 18px; font-size: 17px; color: #93A29E; min-height: 52px; }
+.entrada .enviar { width: 52px; height: 52px; border-radius: 50%; background: #FF6A2B; display: grid; place-items: center; }
+/* dedo */
+#dedo { position: absolute; width: 74px; height: 74px; margin: -37px 0 0 -37px; border-radius: 50%; background: rgba(255,255,255,.28); border: 2px solid rgba(255,255,255,.85); box-shadow: 0 8px 30px rgba(0,0,0,.35); z-index: 50; opacity: 0; backdrop-filter: blur(2px); }
+#onda { position: absolute; width: 74px; height: 74px; margin: -37px 0 0 -37px; border-radius: 50%; border: 3px solid rgba(255,255,255,.9); z-index: 49; opacity: 0; }
+/* funciones */
+.rejilla { position: absolute; left: 160px; right: 160px; top: 380px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 22px; }
+.func { background: rgba(21,25,26,.78); border: 1px solid rgba(255,255,255,.08); border-radius: 30px; padding: 30px 26px; display: flex; flex-direction: column; gap: 18px; opacity: 0; }
+.func i { width: 72px; height: 72px; border-radius: 22px; display: grid; place-items: center; }
+.func i svg { width: 36px; height: 36px; }
+.func b { font-family: Sora; font-size: 27px; line-height: 1.15; } .func span { font-size: 19px; color: #A7B1AE; line-height: 1.4; }
+svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.caos { position: absolute; background: rgba(30,36,38,.92); border: 1px solid rgba(255,255,255,.1); border-radius: 22px; padding: 18px 24px; font-size: 26px; display: flex; gap: 12px; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,.45); white-space: nowrap; }
+.caos em { font-style: normal; font-size: 30px; }
+.raya { position: absolute; left: -6px; right: -6px; top: 50%; height: 4px; background: #FF5C4A; border-radius: 2px; transform-origin: left; }
+#marca-agua { position: absolute; right: 60px; bottom: 44px; display: flex; align-items: center; gap: 12px; font-family: Sora; font-weight: 700; font-size: 24px; opacity: 0; }
+#marca-agua img { width: 40px; height: 40px; border-radius: 10px; }
+</style>
+</head>
+<body>
+<div id="escena">
+  <div id="fondo">
+    <div class="mancha" id="m1"></div><div class="mancha" id="m2"></div><div class="mancha" id="m3"></div><div class="mancha" id="m4"></div>
+  </div>
+
+  <!-- 1 · logo -->
+  <div class="capa centro" id="s1">
+    <img id="logo1" src="logo.png" style="width:220px;height:220px;border-radius:50px;box-shadow:0 40px 90px rgba(255,106,43,.35)">
+    <div class="t-xl" id="nombre1" style="margin-top:44px"></div>
+    <div class="t-m" id="lema1" style="margin-top:22px;font-size:36px">Las averías del hotel, resueltas sin llamadas.</div>
+  </div>
+
+  <!-- 2 · el problema -->
+  <div class="capa" id="s2">
+    <div class="izq" style="width:1000px">
+      <div class="t-l" id="prob-a">Hoy, las averías van por <span class="naranja">WhatsApp, llamadas y papeles.</span></div>
+      <div class="t-m" id="prob-b" style="font-size:38px;color:#F3F5F5">Se pierden avisos. Nadie sabe quién va. Nadie sabe si está hecho.</div>
+    </div>
+    <div class="caos" id="c1" style="left:1220px;top:200px"><em>📞</em>«¿Quién va a la 214?»<i class="raya"></i></div>
+    <div class="caos" id="c2" style="left:1300px;top:360px"><em>💬</em>«La ducha no va»<i class="raya"></i></div>
+    <div class="caos" id="c3" style="left:1180px;top:520px"><em>📝</em>Nota en recepción<i class="raya"></i></div>
+    <div class="caos" id="c4" style="left:1340px;top:680px"><em>❓</em>«¿Ya está arreglado?»<i class="raya"></i></div>
+  </div>
+
+  <!-- 3, 4, 5, 6 · textos de los pasos -->
+  <div class="capa" id="t3"><div class="izq">
+    <div class="paso"><b>1</b>Recepción avisa</div>
+    <div class="t-l">Una avería, <span class="naranja">en 10 segundos.</span></div>
+    <div class="t-m">Habitación, tipo de avería y una foto. Sin llamar a nadie.</div>
+  </div></div>
+  <div class="capa" id="t4"><div class="izq">
+    <div class="paso"><b>2</b>El técnico la recibe</div>
+    <div class="t-l">Le llega <span class="naranja">al momento.</span></div>
+    <div class="t-m">Con el hotel, la habitación y si es urgente. Un toque: «Voy para allá».</div>
+  </div></div>
+  <div class="capa" id="t5"><div class="izq">
+    <div class="paso"><b>3</b>Todo el equipo lo ve</div>
+    <div class="t-l">Cada paso, <span class="naranja">con su hora.</span></div>
+    <div class="t-m">De camino, reparando, resuelto. Y los tiempos quedan guardados en el informe.</div>
+  </div></div>
+  <div class="capa" id="t6"><div class="izq">
+    <div class="paso"><b>4</b>Chat de cada avería</div>
+    <div class="t-l">Hablar <span class="naranja">sin perder nada.</span></div>
+    <div class="t-m">Cada mensaje con nombre, fecha y hora, y doble tic de leído. Nada se puede borrar: queda constancia.</div>
+  </div></div>
+
+  <!-- el móvil -->
+  <div class="movil" id="movil"><div class="pantalla">
+    <div class="isla"></div>
+
+    <!-- nuevo parte -->
+    <div class="vista" id="v-nuevo">
+      <div class="cab"><div class="kick">NUEVO PARTE</div><div class="titulo-app">¿Qué hay que arreglar?</div><div class="chip">▦ Hotel Sol Playa</div></div>
+      <div class="cuerpo">
+        <div class="etq">HABITACIÓN O ZONA</div>
+        <div class="caja num" id="hab"><span id="hab-t"></span><i class="cursor" id="hab-c"></i></div>
+        <div class="etq">TIPO DE AVERÍA</div>
+        <div class="rej">
+          <div class="tile"><i style="background:rgba(47,111,214,.2);color:#6fa0f0"><svg viewBox="0 0 24 24"><path d="M12 3c-3.3 4-5.5 7.1-5.5 10.2a5.5 5.5 0 0 0 11 0C17.5 10.1 15.3 7 12 3z"/></svg></i>Fontanería</div>
+          <div class="tile"><i style="background:rgba(217,154,11,.2);color:#f2bd3c"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></i>Electricidad</div>
+          <div class="tile" id="clima"><i style="background:rgba(14,154,167,.2);color:#4fd0da"><svg viewBox="0 0 24 24"><path d="M12 2v20M3.3 7l17.4 10M20.7 7 3.3 17"/></svg></i>Climatización</div>
+        </div>
+        <div class="etq">QUÉ PASA</div>
+        <div class="caja" id="desc" style="font-size:18px;min-height:82px"><span id="desc-t"></span><i class="cursor" id="desc-c"></i></div>
+        <div class="etq">FOTO</div>
+        <div class="foto" id="foto"><div class="img" id="foto-img"></div><span id="foto-t">📷 Hacer foto</span></div>
+      </div>
+      <div class="boton" id="enviar">↑ Enviar a Hotel Sol Playa</div>
+      <div class="aviso-ok" id="ok">✓ Enviado al técnico</div>
+    </div>
+
+    <!-- técnico: lista -->
+    <div class="vista" id="v-lista">
+      <div class="banner" id="banner"><i><svg viewBox="0 0 24 24" style="width:24px;height:24px;color:#fff"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16h.01"/></svg></i><div style="flex:1"><small><span>AVISAYA</span><span>AHORA</span></small><b>Urgente · Hotel Sol Playa · Hab. 312</b><span>Climatización — El aire hace ruido y no enfría</span></div></div>
+      <div class="verde"><small>Buenos días,</small><h4>Javi · Mantenimiento</h4></div>
+      <div class="stats">
+        <div class="stat"><i style="background:rgba(255,92,74,.16);color:#ff7a68">▣</i><div><b id="st1">1</b><span>Sin asignar</span></div></div>
+        <div class="stat"><i style="background:rgba(255,92,74,.16);color:#ff7a68">!</i><div><b id="st2">1</b><span>Urgentes</span></div></div>
+      </div>
+      <div class="cuerpo" style="padding-top:22px">
+        <div class="tarjeta" id="nueva" style="opacity:0">
+          <div class="fila"><div class="hab"><div><small>HAB.</small><b>312</b></div></div><div><div class="tipo">❄ Climatización</div><div class="tags"><span class="tag" style="background:rgba(255,92,74,.16);color:#ff7a68">AVISADO</span><span class="tag" style="background:rgba(255,92,74,.16);color:#ff7a68">URGENTE</span></div></div></div>
+          <div style="font-size:16px;color:#c4cecb">El aire hace ruido y no enfría</div>
+        </div>
+        <div class="tarjeta" style="border-left-color:#3A4643">
+          <div class="fila"><div class="hab"><div><small>HAB.</small><b>108</b></div></div><div><div class="tipo">💧 Fontanería</div><div class="tags"><span class="tag" style="background:rgba(255,92,74,.16);color:#ff7a68">AVISADO</span></div></div></div>
+          <div style="font-size:16px;color:#c4cecb">Fuga en el lavabo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- técnico / recepción: el parte -->
+    <div class="vista" id="v-parte">
+      <div class="cab"><div class="kick">PT-DF35DF88 · HOTEL SOL PLAYA</div><div class="titulo-app">Hab. 312</div></div>
+      <div class="cuerpo" style="padding-bottom:6px">
+        <div class="tarjeta" id="tparte">
+          <div class="fila"><div class="hab"><div><small>HAB.</small><b>312</b></div></div><div><div class="tipo">❄ Climatización</div><div class="tags"><span class="tag" id="tag-estado">AVISADO</span><span class="tag" style="background:rgba(255,92,74,.16);color:#ff7a68">URGENTE</span></div></div></div>
+          <div class="barras"><i><u id="b1"></u></i><i><u id="b2"></u></i><i><u id="b3"></u></i><i><u id="b4"></u></i></div>
+          <div class="nombres"><span>Avisado</span><span>De camino</span><span>Reparando</span><span>Resuelto</span></div>
+        </div>
+      </div>
+      <div class="accion" id="accion">Voy para allá</div>
+      <div class="tiempos">
+        <div><span>Hasta que salió</span><b id="ti1">—</b></div>
+        <div><span>Reparación</span><b id="ti2">—</b></div>
+        <div><span>Total</span><b id="ti3">—</b></div>
+      </div>
+      <div class="datos"><div><span>Avisó</span><b>Lucía (Recepción)</b></div><div><span>Técnico</span><b>Javi</b></div><div><span>Aviso</span><b>09:12</b></div></div>
+    </div>
+
+    <!-- chat -->
+    <div class="vista" id="v-chat">
+      <div class="chatcab"><i>‹</i><div><b>Hab. 312 · Climatización</b><span>Hotel Sol Playa · Reparando</span></div></div>
+      <div class="msgs">
+        <div class="msg ajeno" id="m-a"><span class="autor" style="color:#5B9BFF">Lucía · Recepción</span><div class="burbuja">El cliente vuelve a las 12, ¿llegas?</div><span class="pie">09:41</span></div>
+        <div class="msg mio" id="m-b"><div class="burbuja">Sí, estoy cambiando el filtro</div><span class="pie">09:43 <b id="tic1" style="color:#97A2A0">✓✓</b></span></div>
+        <div class="msg ajeno" id="m-esc"><span class="autor" style="color:#5B9BFF">Lucía está escribiendo</span><div class="burbuja puntos"><i id="p1"></i><i id="p2"></i><i id="p3"></i></div></div>
+        <div class="msg ajeno" id="m-c" style="position:absolute;opacity:0"><span class="autor" style="color:#5B9BFF">Lucía · Recepción</span><div class="burbuja">¡Genial, gracias Javi! 🙌</div><span class="pie">09:44</span></div>
+      </div>
+      <div class="entrada"><div class="campo" id="campo">Mensaje</div><div class="enviar">↑</div></div>
+    </div>
+
+    <div id="onda"></div>
+  </div></div>
+  <div id="dedo"></div>
+
+  <!-- 7 · funciones -->
+  <div class="capa" id="s7">
+    <div class="t-l" style="position:absolute;left:160px;top:170px;width:1400px">Todo el mantenimiento del hotel, <span class="naranja">en una app.</span></div>
+    <div class="rejilla">
+      <div class="func"><i style="background:rgba(255,106,43,.16);color:#FF6A2B"><svg viewBox="0 0 24 24"><path d="M12 17v5M9 3h6l-1 6 4 4H6l4-4z"/></svg></i><b>Avisos generales</b><span>«Sofá cama de la 1C roto», a la vista de todos.</span></div>
+      <div class="func"><i style="background:rgba(91,155,255,.16);color:#5B9BFF"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg></i><b>Varios hoteles</b><span>Una cuenta para todos. Cada aviso dice su hotel.</span></div>
+      <div class="func"><i style="background:rgba(245,163,59,.16);color:#F5A33B"><svg viewBox="0 0 24 24"><path d="M8 7h8M8 11h8M8 15h5"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg></i><b>Historial y PDF</b><span>Busca cualquier avería y saca su informe.</span></div>
+      <div class="func"><i style="background:rgba(61,214,140,.16);color:#3DD68C"><svg viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 0 0-5-2M9 20H2v-2a4 4 0 0 1 8 0zM6 11a3 3 0 1 0 0-.01M16 11a3 3 0 1 0 0-.01"/></svg></i><b>Chat con técnicos</b><span>General, por avería y con todo el equipo.</span></div>
+      <div class="func"><i style="background:rgba(168,139,255,.16);color:#A88BFF"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/></svg></i><b>Registro</b><span>Lo eliminado se guarda. Nadie puede mentir.</span></div>
+    </div>
+  </div>
+
+  <!-- 8 · beneficios -->
+  <div class="capa centro" id="s8"><div class="t-xl" id="ben" style="font-size:150px"></div><div class="t-m" id="ben-sub" style="margin-top:30px;font-size:38px"></div></div>
+
+  <!-- 9 · cierre -->
+  <div class="capa centro" id="s9">
+    <img src="logo.png" id="logo9" style="width:180px;height:180px;border-radius:42px;box-shadow:0 40px 90px rgba(255,106,43,.35)">
+    <div class="t-xl" style="margin-top:38px">Avisaya</div>
+    <div class="t-m" style="margin-top:18px;font-size:36px">Las averías del hotel, resueltas sin llamadas.</div>
+    <div id="cta" style="margin-top:56px;padding:22px 48px;border-radius:99px;background:#FF6A2B;font-weight:700;font-size:32px;box-shadow:0 20px 50px rgba(255,106,43,.4)">Pide una demo</div>
+    <div class="t-m" style="margin-top:26px;font-size:26px">En iPhone y Android</div>
+  </div>
+
+  <div id="marca-agua"><img src="logo.png">Avisaya</div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const tramo = (t, a, b) => cl((t - a) / (b - a));
+const sale = (x) => 1 - Math.pow(1 - x, 3);           // frena suave
+const entraSale = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const mezcla = (a, b, x) => a + (b - a) * x;
+/** Visible entre a y b, con fundido de entrada y de salida. */
+const ventana = (t, a, b, f = 0.5) => Math.min(sale(tramo(t, a, a + f)), 1 - entraSale(tramo(t, b - f, b)));
+
+// palabras que suben una a una
+function partir(el, texto) {
+  el.innerHTML = texto.split(' ').map((p) => `<span class="pal">${p}</span>`).join(' ');
+}
+partir($('nombre1'), 'Avisaya');
+function subirPalabras(el, t, a, paso = 0.07, dur = 0.6) {
+  [...el.querySelectorAll('.pal')].forEach((p, i) => {
+    const x = sale(tramo(t, a + i * paso, a + i * paso + dur));
+    p.style.opacity = x; p.style.transform = `translateY(${(1 - x) * 40}px)`;
+  });
+}
+
+// --- el dedo: va de un sitio a otro y pulsa ---
+// coordenadas en la pantalla del móvil (dentro de .pantalla, que empieza en 1236, 86)
+const P0 = { x: 1236, y: 86 };
+const toques = [
+  // [segundo, x, y] dentro de la pantalla
+  [12.5, 220, 238], [14.3, 360, 412], [17.6, 219, 680], [19.0, 219, 840],
+  [24.0, 219, 130], [26.2, 219, 400],
+  [31.2, 219, 400], [33.6, 219, 400],
+];
+const dedo = $('dedo'), onda = $('onda');
+function moverDedo(t) {
+  const visible = (t > 11.8 && t < 20.4) || (t > 23.2 && t < 28) || (t > 30.4 && t < 35);
+  let x = 260, y = 960, presion = 0;
+  // posición: interpolación entre toques
+  for (let i = 0; i < toques.length; i++) {
+    const [tt, tx, ty] = toques[i];
+    const prev = toques[i - 1];
+    if (t <= tt) {
+      const desde = prev && tt - prev[0] < 4 ? prev : [tt - 0.9, tx + 80, ty + 260];
+      const x0 = desde[1], y0 = desde[2];
+      const k = entraSale(tramo(t, tt - 0.7, tt - 0.05));
+      x = mezcla(x0, tx, k); y = mezcla(y0, ty, k);
+      break;
+    }
+    x = tx; y = ty;
+  }
+  for (const [tt] of toques) if (t > tt - 0.08 && t < tt + 0.22) presion = Math.sin(tramo(t, tt - 0.08, tt + 0.22) * Math.PI);
+  dedo.style.opacity = visible ? 1 : 0;
+  dedo.style.left = P0.x + x + 'px'; dedo.style.top = P0.y + y + 'px';
+  dedo.style.transform = `scale(${1 - presion * 0.22})`;
+  // onda al pulsar
+  let o = 0, s = 1, ox = 0, oy = 0;
+  for (const [tt, tx, ty] of toques) {
+    const k = tramo(t, tt, tt + 0.6);
+    if (k > 0 && k < 1) { o = 1 - k; s = 1 + k * 1.6; ox = tx; oy = ty; }
+  }
+  onda.style.opacity = o * 0.9; onda.style.left = ox + 'px'; onda.style.top = oy + 'px'; onda.style.transform = `scale(${s})`;
+}
+
+const escribir = (texto, t, a, b) => texto.slice(0, Math.round(texto.length * tramo(t, a, b)));
+const ESTADOS = [
+  ['AVISADO', '#ff7a68', 'rgba(255,92,74,.16)', '#FF5C4A'],
+  ['TÉCNICO DE CAMINO', '#7eaaff', 'rgba(80,140,255,.16)', '#5B9BFF'],
+  ['REPARANDO', '#f5a54a', 'rgba(240,150,50,.16)', '#F5A33B'],
+  ['RESUELTO', '#4fd38f', 'rgba(50,190,120,.16)', '#3DD68C'],
+];
+const BOTONES = [['Voy para allá', '#FF6A2B'], ['Empezar a reparar', '#5B9BFF'], ['Marcar resuelto', '#3DD68C'], ['Resuelto ✓', '#2A3133']];
+function ponerEstado(n, k) {
+  const e = ESTADOS[n];
+  const tag = $('tag-estado'); tag.textContent = e[0]; tag.style.color = e[1]; tag.style.background = e[2];
+  $('tparte').style.borderLeftColor = e[3];
+  ['b1', 'b2', 'b3', 'b4'].forEach((b, i) => {
+    const u = $(b); u.style.background = e[3];
+    u.style.transform = `scaleX(${i < n ? 1 : i === n ? k : 0})`;
+  });
+  const a = $('accion'); a.textContent = BOTONES[n][0]; a.style.background = BOTONES[n][1];
+}
+
+function render(t) {
+  // fondo: masas de color que se mueven despacio
+  const m = [[$('m1'), 900, 0.35, 0.3, 255, 106, 43, 0.55], [$('m2'), 1100, 0.75, 0.75, 150, 52, 14, 0.5], [$('m3'), 700, 0.6, 0.2, 255, 150, 90, 0.25], [$('m4'), 900, 0.15, 0.85, 16, 70, 62, 0.55]];
+  m.forEach(([el, r, cx, cy, R, G, B, a], i) => {
+    const x = (cx + Math.sin(t * 0.13 + i * 1.7) * 0.12) * 2300, y = (cy + Math.cos(t * 0.11 + i) * 0.1) * 1300;
+    el.style.width = el.style.height = r + 'px'; el.style.left = x - r / 2 + 'px'; el.style.top = y - r / 2 + 'px';
+    el.style.background = `radial-gradient(circle, rgba(${R},${G},${B},${a}), rgba(${R},${G},${B},0) 70%)`;
+  });
+
+  // 1 · logo (0–4.6)
+  const v1 = ventana(t, 0, 4.6, 0.6);
+  $('s1').style.opacity = v1;
+  const kl = sale(tramo(t, 0.2, 1.4));
+  $('logo1').style.transform = `scale(${0.7 + kl * 0.3}) rotate(${(1 - kl) * -8}deg)`;
+  $('logo1').style.opacity = kl;
+  subirPalabras($('nombre1'), t, 1.0);
+  const kla = sale(tramo(t, 1.7, 2.6)); $('lema1').style.opacity = kla; $('lema1').style.transform = `translateY(${(1 - kla) * 20}px)`;
+  $('s1').style.transform = `scale(${1 + tramo(t, 4.0, 4.6) * 0.05})`;
+
+  // 2 · el problema (4.6–11)
+  $('s2').style.opacity = ventana(t, 4.6, 11, 0.6);
+  const ka = sale(tramo(t, 4.9, 5.8)); $('prob-a').style.opacity = ka; $('prob-a').style.transform = `translateY(${(1 - ka) * 30}px)`;
+  const kb = sale(tramo(t, 8.4, 9.2)); $('prob-b').style.opacity = kb; $('prob-b').style.transform = `translateY(${(1 - kb) * 20}px)`;
+  ['c1', 'c2', 'c3', 'c4'].forEach((c, i) => {
+    const el = $(c), k = sale(tramo(t, 5.4 + i * 0.35, 6.2 + i * 0.35));
+    const flota = Math.sin(t * 1.3 + i * 2) * 10;
+    const tacha = sale(tramo(t, 7.9 + i * 0.15, 8.4 + i * 0.15));
+    el.style.opacity = k * (1 - tacha * 0.55);
+    el.style.transform = `translate(${(1 - k) * 80}px, ${flota}px) rotate(${(i % 2 ? 1 : -1) * 2.5}deg)`;
+    el.querySelector('.raya').style.transform = `scaleX(${tacha})`;
+  });
+
+  // el móvil: entra en la 3 y sale tras la 6 (11–45)
+  const vm = ventana(t, 11, 45, 0.7);
+  $('movil').style.opacity = vm;
+  $('movil').style.transform = `translateY(${(1 - sale(tramo(t, 11, 11.9))) * 120 + tramo(t, 44.3, 45) * 60}px) rotate(${Math.sin(t * 0.4) * 0.6}deg)`;
+  moverDedo(t);
+
+  // textos de los pasos
+  [['t3', 11.2, 21], ['t4', 21, 29], ['t5', 29, 37], ['t6', 37, 45]].forEach(([id, a, b]) => {
+    const el = $(id), v = ventana(t, a, b, 0.6); el.style.opacity = v;
+    el.querySelectorAll('.izq > *').forEach((h, i) => {
+      const k = sale(tramo(t, a + 0.15 + i * 0.12, a + 0.85 + i * 0.12));
+      h.style.transform = `translateY(${(1 - k) * 34}px)`; h.style.opacity = k;
+    });
+  });
+
+  // vistas del móvil
+  const vistas = { nuevo: ventana(t, 11, 20.8, 0.4), lista: ventana(t, 20.6, 24.6, 0.4), parte: ventana(t, 24.4, 37.2, 0.4), chat: ventana(t, 37, 45.5, 0.4) };
+  for (const [k, v] of Object.entries(vistas)) $('v-' + k).style.opacity = v;
+
+  // 3 · nuevo parte
+  $('hab-t').textContent = escribir('312', t, 12.7, 13.4);
+  $('hab').classList.toggle('foco', t > 12.5 && t < 14);
+  $('hab-c').style.opacity = t > 12.5 && t < 14 && Math.floor(t * 2.4) % 2 === 0 ? 1 : 0;
+  $('clima').classList.toggle('sel', t > 14.35);
+  $('clima').style.transform = `scale(${1 + Math.sin(tramo(t, 14.3, 14.7) * Math.PI) * 0.06})`;
+  $('desc-t').textContent = escribir('El aire hace ruido y no enfría', t, 14.9, 16.9);
+  $('desc').classList.toggle('foco', t > 14.8 && t < 17.3);
+  $('desc-c').style.opacity = t > 14.8 && t < 17.3 && Math.floor(t * 2.4) % 2 === 0 ? 1 : 0;
+  const kf = sale(tramo(t, 17.7, 18.3)); $('foto-img').style.opacity = kf; $('foto-t').style.opacity = 1 - kf;
+  $('enviar').style.transform = `scale(${1 - Math.sin(tramo(t, 18.95, 19.25) * Math.PI) * 0.05})`;
+  const kok = ventana(t, 19.2, 20.6, 0.3); $('ok').style.opacity = kok; $('ok').style.transform = `translate(-50%, ${(1 - kok) * 16}px)`;
+
+  // 4 · le llega al técnico
+  const kban = sale(tramo(t, 21.6, 22.3)) * (1 - entraSale(tramo(t, 23.9, 24.3)));
+  $('banner').style.transform = `translateY(${(1 - kban) * -180}px)`;
+  const kn = sale(tramo(t, 22.6, 23.2));
+  $('nueva').style.opacity = kn; $('nueva').style.transform = `translateY(${(1 - kn) * -20}px)`;
+  $('nueva').style.boxShadow = `0 0 0 ${3 * (1 - tramo(t, 23.2, 24.2))}px rgba(255,106,43,.6)`;
+  $('st1').textContent = t > 22.4 ? 2 : 1; $('st2').textContent = t > 22.6 ? 2 : 1;
+
+  // 4–5 · el parte avanza: toque en 26.2 (de camino), 31.2 (reparando), 33.6 (resuelto)
+  let n = 0, k = 1;
+  if (t >= 26.2) { n = 1; k = sale(tramo(t, 26.2, 26.9)); }
+  if (t >= 31.2) { n = 2; k = sale(tramo(t, 31.2, 31.9)); }
+  if (t >= 33.6) { n = 3; k = sale(tramo(t, 33.6, 34.3)); }
+  ponerEstado(n, n === 0 ? 0 : k);
+  $('accion').style.transform = `scale(${1 - Math.max(...[26.2, 31.2, 33.6].map((x) => Math.sin(tramo(t, x - 0.08, x + 0.2) * Math.PI))) * 0.05})`;
+  const cuenta = (fin, a) => (t < a ? '—' : Math.round(fin * sale(tramo(t, a, a + 1.1))) + ' min');
+  $('ti1').textContent = cuenta(6, 26.4); $('ti2').textContent = cuenta(32, 34); $('ti3').textContent = cuenta(47, 34.6);
+
+  // 6 · chat
+  const aparece = (id, a) => { const x = sale(tramo(t, a, a + 0.45)); $(id).style.opacity = x; $(id).style.transform = `translateY(${(1 - x) * 18}px)`; };
+  aparece('m-a', 37.8); aparece('m-b', 39.4);
+  $('campo').textContent = t > 38.4 && t < 39.4 ? escribir('Sí, estoy cambiando el filtro', t, 38.4, 39.2) : 'Mensaje';
+  $('campo').style.color = t > 38.4 && t < 39.4 ? '#F3F5F5' : '#93A29E';
+  $('tic1').style.color = t > 40.4 ? '#3DD68C' : '#97A2A0';
+  const esc = ventana(t, 40.8, 42.6, 0.25);
+  $('m-esc').style.opacity = esc; $('m-esc').style.display = t < 42.6 ? 'flex' : 'none';
+  ['p1', 'p2', 'p3'].forEach((p, i) => { const s = Math.max(0, Math.sin((t * 6 - i * 0.9))); $(p).style.opacity = 0.35 + s * 0.65; $(p).style.transform = `translateY(${-s * 4}px)`; });
+  $('m-c').style.position = t >= 42.6 ? 'relative' : 'absolute';
+  aparece('m-c', 42.6);
+
+  // 7 · funciones (45–52)
+  $('s7').style.opacity = ventana(t, 45, 52, 0.6);
+  const t7 = $('s7').querySelector('.t-l'), k7 = sale(tramo(t, 45.2, 46));
+  t7.style.opacity = k7; t7.style.transform = `translateY(${(1 - k7) * 30}px)`;
+  document.querySelectorAll('.func').forEach((f, i) => {
+    const x = sale(tramo(t, 45.8 + i * 0.22, 46.6 + i * 0.22));
+    f.style.opacity = x; f.style.transform = `translateY(${(1 - x) * 60}px) scale(${0.96 + x * 0.04})`;
+  });
+
+  // 8 · beneficios (52–58)
+  const BEN = [['Sin llamadas.', 'Todo el aviso, en un toque.'], ['Con foto.', 'El técnico sabe qué llevar.'], ['Con hora.', 'Cada paso queda guardado.'], ['Sin mentiras.', 'Los chats no se pueden borrar.']];
+  $('s8').style.opacity = ventana(t, 52, 58, 0.4);
+  const i8 = cl(Math.floor((t - 52) / 1.5), 0, 3), l8 = (t - 52) - i8 * 1.5;
+  const k8 = sale(cl(l8 / 0.45)) * (1 - entraSale(cl((l8 - 1.15) / 0.35)));
+  $('ben').textContent = BEN[i8][0]; $('ben-sub').textContent = BEN[i8][1];
+  $('ben').style.opacity = k8; $('ben').style.transform = `translateY(${(1 - k8) * 40}px) scale(${0.97 + k8 * 0.03})`;
+  $('ben-sub').style.opacity = k8;
+  $('ben').style.color = i8 % 2 ? '#FF6A2B' : '#F3F5F5';
+
+  // 9 · cierre (58–65)
+  $('s9').style.opacity = sale(tramo(t, 58, 58.8));
+  const k9 = sale(tramo(t, 58.2, 59.4));
+  $('logo9').style.transform = `scale(${0.8 + k9 * 0.2})`;
+  [...$('s9').children].forEach((h, i) => { const x = sale(tramo(t, 58.3 + i * 0.18, 59.1 + i * 0.18)); h.style.opacity = x; if (i) h.style.transform = `translateY(${(1 - x) * 24}px)`; });
+  $('cta').style.transform = `scale(${1 + Math.sin(Math.max(0, t - 60.5) * 2.2) * 0.02})`;
+
+  // la marca, discreta, mientras se explica
+  $('marca-agua').style.opacity = ventana(t, 5.2, 57.6, 0.6) * 0.75;
+}
+window.DURACION = 65;
+window.render = render;
+render(0);
+</script>
+</body>
+</html>
