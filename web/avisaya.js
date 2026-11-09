@@ -214,6 +214,26 @@
       await sleep(2600); root.classList.add('is-fading'); await sleep(600);
     }
   };
+  // informe: cada nota se queda 6 segundos, para que dé tiempo a leerla
+  const docLoop = async root => {
+    vis.observe(root);
+    const marks = [...root.querySelectorAll('.ui-doc__mark')];
+    const note = root.querySelector('.ui-doc__note');
+    const kind = note.querySelector('[data-doc-kind]'), msg = note.querySelector('[data-doc-msg]'), where = note.querySelector('[data-doc-where]');
+    const notas = marks.map((m, i) => i === 0 ? { k: kind.textContent, m: msg.textContent, w: where.textContent } : (m.dataset.msg ? { k: m.dataset.kind, m: m.dataset.msg, w: m.dataset.where } : null));
+    const vivas = notas.map((n, i) => n ? i : -1).filter(i => i >= 0);
+    let k = 0;
+    for (;;) {
+      await whenSeen(root);
+      const i = vivas[k % vivas.length], n = notas[i];
+      note.classList.remove('is-on'); await sleep(450);
+      marks.forEach((m, j) => { m.classList.toggle('is-on', j === i); if (j !== i && m.classList.contains('is-on')) m.classList.add('is-seen'); });
+      kind.textContent = n.k; msg.textContent = n.m; where.textContent = n.w;
+      await sleep(250); note.classList.add('is-on');
+      await sleep(6000); k++;
+    }
+  };
+  document.querySelectorAll('[data-av="doc"]').forEach(docLoop);
   document.querySelectorAll('[data-av="chat"]').forEach(chatLoop);
   document.querySelectorAll('[data-av="checks"]').forEach(checksLoop);
   const frags = [...document.querySelectorAll('[data-ui]')];

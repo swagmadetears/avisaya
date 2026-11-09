@@ -8,6 +8,8 @@ import { Animated, Entra, LinearTransition, Pulsable, TarjetaEsqueleto } from '.
 import { Notificacion, type NotificacionRef } from '../../components/Notificacion';
 import { ParteTarjeta, type Accion } from '../../components/ParteTarjeta';
 import { Aviso, Boton } from '../../components/ui';
+import { Tablon } from '../../components/Tablon';
+import { useAvisos } from '../../lib/avisos';
 import { useHotelElegido } from '../../lib/hotel-elegido';
 import { usePartes, type CambioParte } from '../../lib/partes';
 import { useSesion } from '../../lib/sesion';
@@ -94,6 +96,8 @@ export default function Averias() {
   const { partes: todosPartes, perfiles, fotos, cargando, error, recargar, actualizar } = usePartes(idsHoteles, alCambiar);
   // Partes del hotel elegido arriba (o de todos)
   const partes = useMemo(() => (hotelSel ? todosPartes.filter((p) => p.hotel_id === hotelSel) : todosPartes), [todosPartes, hotelSel]);
+  const { avisos: todosAvisos, cerrar: cerrarAviso } = useAvisos(idsHoteles);
+  const avisos = useMemo(() => (hotelSel ? todosAvisos.filter((x) => x.hotel_id === hotelSel) : todosAvisos), [todosAvisos, hotelSel]);
 
   const rol = perfil?.rol ?? 'recepcion';
   const esTecnico = rol === 'tecnico';
@@ -246,6 +250,8 @@ export default function Averias() {
           })}
         </ScrollView>
       ) : null}
+      <Tablon avisos={avisos} perfiles={perfiles} nombresHotel={varios && !hotelSel ? nombresHotel : undefined} hotelNuevo={hotelSel ?? hotel.id} onCerrar={cerrarAviso} />
+
       <View style={s.resumen}>
         {resumen.map((r) => (
           <Pressable key={r.texto} style={s.dato} onPress={() => setFiltro(r.filtro)} accessibilityRole="button" accessibilityLabel={`${r.n} ${r.texto}`}>

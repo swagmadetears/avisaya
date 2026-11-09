@@ -265,6 +265,9 @@
   /* el recuadro de cada tarjeta, entero: no lo corta el borde de la tarjeta */
   #top .card > .panel { margin-bottom: 0; border-radius: 18px; }
   #top .card { padding-bottom: var(--c-pad, 24px); }
+  #top .card.card--open { padding: 22px 22px 22px; border-radius: 24px; border: 1px solid rgba(255,255,255,.07); }
+  #top .card.card--open > p { max-width: 52ch; }
+  @media (max-width: 639px) { #top .card.card--open { padding: 18px; } }
   #top .card > .panel > .stage { border-radius: inherit; }
   /* movimientos más suaves dentro de los cuadros */
 
@@ -288,6 +291,32 @@
   .story__glow { opacity: .35; }
   .drum__label { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
   @media (max-width: 639px) { .foot { align-items: flex-start; } .foot > .nav__logo { align-self: flex-start; } }
+  /* preguntas: tarjetas de cristal numeradas, la abierta resalta en naranja */
+  .faq-kicker { display: inline-flex; align-items: center; gap: 8px; color: var(--p-accent); }
+  .faq-kicker__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--p-accent); box-shadow: 0 0 0 4px rgba(228,86,27,.2); }
+  #preguntas h2 { font-size: clamp(36px, 4.4vw, 60px); line-height: 1.02; letter-spacing: -0.035em; }
+  .faq-acento { background: linear-gradient(90deg, #ff8a4c, #e4561b 60%, #b8400f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .faq-cta { display: grid; grid-template-columns: auto 1fr; gap: 14px 14px; align-items: center; margin-top: var(--s-5); padding: 20px; border-radius: 22px;
+    background: rgba(13,18,17,.72); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,.08); box-shadow: 0 24px 60px -36px rgba(0,0,0,.7); }
+  .faq-cta__icono { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: rgba(228,86,27,.16); color: #ff8a4c; }
+  .faq-cta b { display: block; font-size: 17px; font-weight: 600; }
+  .faq-cta span:not(.faq-cta__icono) { color: var(--muted); font-size: 15px; }
+  .faq-cta .btn { grid-column: 1 / -1; justify-self: start; }
+  #preguntas .desplegables { display: grid; gap: 10px; }
+  #preguntas .desplegables > details { padding: 18px 20px; border: 1px solid rgba(255,255,255,.07); border-radius: 18px; background: rgba(13,18,17,.62);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: border-color 300ms, background-color 300ms, box-shadow 300ms; }
+  #preguntas .desplegables > details:first-child { padding-top: 18px; }
+  #preguntas .desplegables > details:hover { border-color: rgba(255,255,255,.16); }
+  #preguntas .desplegables > details[open] { border-color: rgba(228,86,27,.55); background: rgba(30,18,12,.66); box-shadow: 0 18px 50px -30px rgba(228,86,27,.55); }
+  #preguntas .desplegables summary { gap: 14px; }
+  .faq__num { font: 500 13px/1 var(--font-mono); font-style: normal; color: var(--p-accent); flex: none; width: 22px; }
+  #preguntas .desplegables summary > span { flex: 1; }
+  #preguntas .desplegables p { padding-left: 36px; color: color-mix(in oklab, var(--ink) 80%, transparent); }
+  @media (max-width: 639px) { #preguntas .desplegables p { padding-left: 0; } .faq-cta { padding: 16px; } }
+  /* informe: la nota va debajo del texto, sin taparlo, y se lee con calma */
+  [data-av="doc"].ui-doc { padding-right: 0; width: 100%; }
+  [data-av="doc"] .ui-doc__note { position: relative; right: auto; top: auto !important; width: auto; margin-top: 12px; transition: opacity 600ms ease, transform 700ms cubic-bezier(.2,.75,.15,1); }
+  [data-av="doc"] .ui-doc__mark { transition: background-size 900ms cubic-bezier(.2,.75,.15,1), box-shadow 600ms; }
   /* cuadros animados: centrados en su recuadro, enteros, sin cortes */
   .stage.av-stage { -webkit-mask: none; mask: none; }
   .stage.av-stage > .av-c { left: 50%; top: var(--top, 50%); width: min(var(--w, 380px), calc(100% - 40px)); transform: translateX(-50%); }
@@ -297,7 +326,6 @@
   @media (max-width: 639px) { #funciones .panel, #pasos .panel { --p-h: 340px; } .faq__panel { --p-h: 260px; } }
   #informes .frame .stage.av-stage > .av-c { width: min(var(--w), calc(100% - 48px)); }
   /* una --p-h por grupo de tarjetas */
-  .faq__panel { --p-h: 340px; margin-top: var(--s-4); }
   #informes .at-corner { --ax: 40px; }
   /* la portada: los móviles recortados sobre el fondo de la página (sin caja) */
   #top .hero--product .hero__stage:has(> .phones) { margin-top: var(--s-6); margin-inline: 0; margin-bottom: calc(var(--s-5) - var(--hpadb, 64px)); border-radius: 0; background: none; overflow: visible; }
@@ -499,7 +527,7 @@
           <h2 id="funciones-h">La app de mantenimiento, a la vista de todo el hotel. <span class="muted">Avisos, habitaciones, hoteles e historial.</span></h2>
         </div>
         <div class="grid">
-          <article class="card card--row card--open span-6 m-nolift">
+          <article class="card card--row card--open span-4 m-nolift">
             <h3>Avisa de cada avería al momento</h3>
             <p>La notificación llega al móvil con el hotel, la habitación y la prioridad. Las urgentes salen en rojo y primero.</p>
             <div class="panel">
@@ -514,7 +542,7 @@
               </div></div>
             </div>
           </article>
-          <article class="card card--row card--open span-6 m-nolift">
+          <article class="card card--row card--open span-4 m-nolift">
             <h3>Bloquea habitaciones con avería</h3>
             <p>Si una habitación no se puede ocupar, recepción la ve marcada hasta que el técnico cierra el parte.</p>
             <div class="panel">
@@ -531,6 +559,21 @@
                     <li class="ui-tg"><span class="ui-tg__text"><span class="ui-tg__label">Habitación 412</span><span class="ui-tg__sub">La tarjeta no abre · Avisado</span></span><button class="ui-switch is-on" type="button" role="switch" aria-checked="true" aria-label="No vender la habitación 412"><i></i></button></li>
                     <li class="ui-tg"><span class="ui-tg__text"><span class="ui-tg__label">Habitación 214</span><span class="ui-tg__sub">No enfría · se puede ocupar</span></span><button class="ui-switch" type="button" role="switch" aria-checked="false" aria-label="No vender la habitación 214"><i></i></button></li>
                     <li class="ui-tg"><span class="ui-tg__text"><span class="ui-tg__label">Habitación 330</span><span class="ui-tg__sub">Ducha sin agua caliente</span></span><button class="ui-switch is-on" type="button" role="switch" aria-checked="true" aria-label="No vender la habitación 330"><i></i></button></li>
+                  </ul>
+                </div>
+              </div></div>
+            </div>
+          </article>
+          <article class="card card--row card--open span-4 m-nolift">
+            <h3>Deja avisos para todo el equipo</h3>
+            <p>«Sofá cama de la 1C roto»: el aviso queda a la vista de recepción, limpieza y mantenimiento hasta que alguien lo cierra.</p>
+            <div class="panel">
+              <div class="stage av-stage"><div class="av-c" style="--w:360px" data-ui-loop>
+                <div class="ui ui-notify" data-ui="notify">
+                  <ul class="ui-notify__list" data-notify-list>
+                    <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="2">LG</span><span class="ui-note__text"><span class="ui-note__title">Sofá cama de la 1C roto<time>ahora</time></span><span class="ui-note__body">Lucía · Recepción</span></span></li>
+                    <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="5">JV</span><span class="ui-note__text"><span class="ui-note__title">Ascensor 2 en revisión<time>1 h</time></span><span class="ui-note__body">Javi · Mantenimiento</span></span></li>
+                    <li class="ui-note"><span class="ui-avatar ui-note__av" data-tone="3">CM</span><span class="ui-note__text"><span class="ui-note__title">Falta mando en la 305<time>2 h</time></span><span class="ui-note__body">Carmen · Limpieza</span></span></li>
                   </ul>
                 </div>
               </div></div>
@@ -626,7 +669,7 @@
         </div>
         <div class="frame frame--split span-6 start-7" data-visual data-fx="grain-gradient" data-fx-seed="11" data-fx-palette='{"bg":"#0f1513","surface":"#19211f","ink":"#f2f5f4","accent":"#3b2a22"}' data-fx-params='{"speed":0.25,"grainMotion":0}'>
           <div class="stage av-stage"><div class="av-c" style="--w:580px">
-            <div class="ui ui-doc" data-ui="doc">
+            <div class="ui ui-doc" data-av="doc">
               <article class="ui-doc__page">
                 <div class="ui-doc__label">Informe PT-3FA92C1B · Hotel Sol</div>
                 <div class="ui-doc__title">Habitación 214 · Climatización</div>
@@ -716,32 +759,24 @@
     <div class="wrap">
       <div class="grid">
         <div class="span-5 stack-4">
-          <h2 id="preguntas-h">Preguntas sobre la app</h2>
-          <p class="muted">Lo que suelen preguntar recepción y dirección antes de probarla.</p>
-          <p><a class="link" href="mailto:hola@avisaya.example?subject=Pregunta%20sobre%20Avisaya">Escríbenos</a></p>
-          <div class="panel faq__panel">
-            <div class="stage av-stage"><div class="av-c" style="--w:400px">
-              <div class="ui ui-panel ui-search" data-ui="search">
-                <div class="ui-search__field">
-                  <svg class="ui-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>
-                  <span class="ui-search__q"><span data-search-q>fontaneria</span><i class="ui-search__caret"></i></span>
-                </div>
-                <div class="ui-search__group">Hotel Sol y Sol Playa</div>
-                <ul class="ui-search__list" data-search-list>
-                  <li class="ui-search__row is-sel"><span class="ui-search__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"/><path d="M9 2.5v3h3"/></svg></span><span class="ui-search__t">Hab. 108 · <b>Fontanería</b></span><span class="ui-search__m">Sol</span></li>
-                  <li class="ui-search__row"><span class="ui-search__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"/><path d="M9 2.5v3h3"/></svg></span><span class="ui-search__t">Hab. 330 · <b>Fontanería</b></span><span class="ui-search__m">Sol Playa</span></li>
-                  <li class="ui-search__row"><span class="ui-search__ico"><svg class="ui-icon" viewBox="0 0 16 16"><path d="M4 2.5h5l3 3v8H4z"/><path d="M9 2.5v3h3"/></svg></span><span class="ui-search__t">Hab. 412 · <b>Fontanería</b></span><span class="ui-search__m">Sol</span></li>
-                </ul>
-              </div>
-            </div></div>
+          <p class="t-label faq-kicker"><span class="faq-kicker__dot"></span>Preguntas frecuentes</p>
+          <h2 id="preguntas-h">Lo que todos preguntan <span class="faq-acento">antes de probarla.</span></h2>
+          <p class="muted">Recepción, limpieza, mantenimiento y dirección. Si te queda alguna duda, te contestamos nosotros.</p>
+          <div class="faq-cta">
+            <span class="faq-cta__icono" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 5h16v11H8l-4 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9.5h8M8 12.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <div>
+              <b>¿Tienes otra pregunta?</b>
+              <span>Escríbenos y te la resolvemos.</span>
+            </div>
+            <a class="btn btn--primary" href="mailto:hola@avisaya.example?subject=Pregunta%20sobre%20Avisaya">Escríbenos</a>
           </div>
         </div>
         <div class="desplegables span-6 start-7">
-          <details class="faq__item" open><summary><span>¿Hace falta instalar la app?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Solo la app de Avisaya en cada móvil, iPhone o Android. Cada persona entra con su correo y su contraseña.</p></details>
-          <details class="faq__item"><summary><span>¿Sirve para varios hoteles?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Sí. Una cuenta puede estar en varios hoteles y cambiar de uno a otro tocando su nombre. Cada aviso dice de qué hotel es.</p></details>
-          <details class="faq__item"><summary><span>¿La app se conecta a las reservas?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>No. Avisaya lleva los partes de mantenimiento; las reservas siguen en el programa que ya usáis.</p></details>
-          <details class="faq__item"><summary><span>¿Los otros hoteles ven mis averías?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>No. Cada hotel ve solo sus partes, sus fotos y su equipo. Un técnico ve los hoteles en los que trabaja y ninguno más.</p></details>
-          <details class="faq__item"><summary><span>¿Cuánto cuesta la app?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Precio a consultar, según el número de hoteles. Pide una demo y te lo contamos.</p></details>
+          <details class="faq__item" open><summary><em class="faq__num">01</em><span>¿Hace falta instalar la app?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Solo la app de Avisaya en cada móvil, iPhone o Android. Cada persona entra con su correo y su contraseña.</p></details>
+          <details class="faq__item"><summary><em class="faq__num">02</em><span>¿Sirve para varios hoteles?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Sí. Una cuenta puede estar en varios hoteles y cambiar de uno a otro tocando su nombre. Cada aviso dice de qué hotel es.</p></details>
+          <details class="faq__item"><summary><em class="faq__num">03</em><span>¿La app se conecta a las reservas?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>No. Avisaya lleva los partes de mantenimiento; las reservas siguen en el programa que ya usáis.</p></details>
+          <details class="faq__item"><summary><em class="faq__num">04</em><span>¿Los otros hoteles ven mis averías?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>No. Cada hotel ve solo sus partes, sus fotos y su equipo. Un técnico ve los hoteles en los que trabaja y ninguno más.</p></details>
+          <details class="faq__item"><summary><em class="faq__num">05</em><span>¿Cuánto cuesta la app?</span><i class="faq__icon" aria-hidden="true"></i></summary><p>Precio a consultar, según el número de hoteles. Pide una demo y te lo contamos.</p></details>
         </div>
       </div>
     </div>
