@@ -3,11 +3,11 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pulsable } from '../../components/movimiento';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aviso, Boton, Insignia } from '../../components/ui';
 import { cargarEventos, codigoParte, compartirInforme, textoEvento, textoMinutos, tiempos, type Evento } from '../../lib/informe';
-import { CAMPOS } from '../../lib/partes';
+import { borrarParte, CAMPOS } from '../../lib/partes';
 import { useSesion } from '../../lib/sesion';
 import { mensajeError, supabase } from '../../lib/supabase';
 import { categoria, color, ESTADOS, esHabitacion, fuente, ROLES, sombra, suave, type Parte, type Perfil } from '../../lib/tema';
@@ -19,7 +19,9 @@ export default function DetalleParte() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { hoteles } = useSesion();
+  const { hoteles, perfil: yo } = useSesion();
+  const [borrando, setBorrando] = useState(false);
+  const puedeBorrar = yo?.rol === 'admin' || yo?.rol === 'recepcion';
   const [parte, setParte] = useState<Parte | null>(null);
   const [perfiles, setPerfiles] = useState<Record<string, Perfil>>({});
   const [eventos, setEventos] = useState<Evento[]>([]);
@@ -68,6 +70,24 @@ export default function DetalleParte() {
     } finally {
       setGenerando(false);
     }
+  }
+
+  function preguntarBorrar() {
+    if (!parte) return;
+    Alert.alert('¿Eliminar este parte?', 'Se borra del todo para todo el equipo: la avería, su foto, su historial y su chat. Úsalo si se ha resuelto solo o se abrió por error.', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar',
+        style: 'destructive',
+        onPress: async () => {
+          setBorrando(true);
+          const e = await borrarParte(parte);
+          setBorrando(false);
+          if (e) return setError(e);
+          router.back();
+        },
+      },
+    ]);
   }
 
   const cabecera = (
@@ -176,6 +196,8 @@ export default function DetalleParte() {
         <Aviso texto={error} />
         <Boton texto="Informe PDF" icono="file-pdf-box" tipo="principal" grande onPress={informe} cargando={generando} />
         <Text style={s.ayuda}>Se crea con los datos de este momento. Puedes guardarlo o enviarlo por WhatsApp o correo.</Text>
+
+        {puedeBorrar ? <Boton texto="Eliminar parte" icono="trash-can-outline" tipo="fantasma" onPress={preguntarBorrar} cargando={borrando} style={{ borderColor: color.pendiente }} /> : null}
       </ScrollView>
     </View>
   );

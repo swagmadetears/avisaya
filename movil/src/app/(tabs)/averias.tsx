@@ -97,7 +97,7 @@ export default function Averias() {
   const { partes: todosPartes, perfiles, fotos, cargando, error, recargar, actualizar } = usePartes(idsHoteles, alCambiar);
   // Partes del hotel elegido arriba (o de todos)
   const partes = useMemo(() => (hotelSel ? todosPartes.filter((p) => p.hotel_id === hotelSel) : todosPartes), [todosPartes, hotelSel]);
-  const { avisos: todosAvisos, cerrar: cerrarAviso } = useAvisos(idsHoteles);
+  const { avisos: todosAvisos, cerrar: cerrarAviso, borrar: borrarAviso } = useAvisos(idsHoteles);
   const avisos = useMemo(() => (hotelSel ? todosAvisos.filter((x) => x.hotel_id === hotelSel) : todosAvisos), [todosAvisos, hotelSel]);
 
   const rol = perfil?.rol ?? 'recepcion';
@@ -271,7 +271,7 @@ export default function Averias() {
         ) : null}
       </View>
 
-      <Tablon avisos={avisos} perfiles={perfiles} nombresHotel={varios && !hotelSel ? nombresHotel : undefined} hotelNuevo={hotelSel ?? hotel.id} onCerrar={cerrarAviso} />
+      <Tablon avisos={avisos} perfiles={perfiles} nombresHotel={varios && !hotelSel ? nombresHotel : undefined} hotelNuevo={hotelSel ?? hotel.id} onCerrar={cerrarAviso} onBorrar={borrarAviso} puedeBorrar={(a) => a.autor_id === perfil.id || perfil.rol === 'admin' || perfil.rol === 'recepcion'} />
 
       <View style={{ gap: 10 }}>
         <Text style={s.seccion}>PARTES</Text>

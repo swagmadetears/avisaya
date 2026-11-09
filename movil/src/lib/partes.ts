@@ -145,6 +145,15 @@ export async function subirFoto(hotelId: string, uri: string): Promise<string> {
   return ruta;
 }
 
+/** Elimina un parte (y su foto). Solo administración y recepción tienen permiso. */
+export async function borrarParte(p: { id: string; foto_path: string | null }): Promise<string | null> {
+  const { error, count } = await supabase.from('partes').delete({ count: 'exact' }).eq('id', p.id);
+  if (error) return error.message;
+  if (!count) return 'No tienes permiso para eliminar este parte.';
+  if (p.foto_path) await supabase.storage.from('fotos').remove([p.foto_path]).catch(() => {});
+  return null;
+}
+
 /** Busca en todos los partes del hotel (también los antiguos) usando la base de datos. */
 export async function buscarPartes(texto: string, desde: Date | null, hasta: Date | null, hotelId: string | null): Promise<Parte[]> {
   const { data, error } = await supabase.rpc('buscar_partes', {

@@ -65,7 +65,19 @@ export function useAvisos(hotelIds: string) {
     return null;
   }, [avisos]);
 
-  return { avisos, cargando, cerrar, recargar: cargar };
+  /** Lo elimina del todo (administración, recepción o quien lo escribió). */
+  const borrar = useCallback(async (id: string): Promise<string | null> => {
+    const antes = avisos;
+    setAvisos((l) => l.filter((a) => a.id !== id));
+    const { error, count } = await supabase.from('avisos').delete({ count: 'exact' }).eq('id', id);
+    if (error || !count) {
+      setAvisos(antes);
+      return error ? mensajeError(error) : 'No tienes permiso para eliminar este aviso.';
+    }
+    return null;
+  }, [avisos]);
+
+  return { avisos, cargando, cerrar, borrar, recargar: cargar };
 }
 
 export async function publicarAviso(hotelId: string, texto: string, lugar: string, importante: boolean): Promise<string | null> {

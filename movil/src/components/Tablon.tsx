@@ -13,10 +13,13 @@ type Props = {
   nombresHotel?: Record<string, string>;
   hotelNuevo: string | null;
   onCerrar: (id: string) => Promise<string | null>;
+  /** Si se puede eliminar (administración, recepción o su autor). */
+  puedeBorrar?: (a: AvisoGeneral) => boolean;
+  onBorrar?: (id: string) => Promise<string | null>;
 };
 
 /** Tablón de avisos generales: «Sofá cama de la 1C roto». Todo el equipo lo ve hasta que alguien lo cierra. */
-export function Tablon({ avisos, perfiles, nombresHotel, hotelNuevo, onCerrar }: Props) {
+export function Tablon({ avisos, perfiles, nombresHotel, hotelNuevo, onCerrar, puedeBorrar, onBorrar }: Props) {
   const router = useRouter();
   const [cerrando, setCerrando] = useState<string | null>(null);
 
@@ -33,6 +36,27 @@ export function Tablon({ avisos, perfiles, nombresHotel, hotelNuevo, onCerrar }:
           else toque('exito');
         },
       },
+      ...(onBorrar && puedeBorrar?.(a)
+        ? [
+            {
+              text: 'Eliminar aviso',
+              style: 'destructive' as const,
+              onPress: () =>
+                Alert.alert('¿Eliminar este aviso?', 'Se borra del todo, también del historial.', [
+                  { text: 'Cancelar', style: 'cancel' },
+                  {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: async () => {
+                      const e = await onBorrar(a.id);
+                      if (e) Alert.alert('No se ha podido eliminar', e);
+                      else toque('exito');
+                    },
+                  },
+                ]),
+            },
+          ]
+        : []),
     ]);
   }
 
