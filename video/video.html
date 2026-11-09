@@ -114,6 +114,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
     <div class="mancha" id="m1"></div><div class="mancha" id="m2"></div><div class="mancha" id="m3"></div><div class="mancha" id="m4"></div>
   </div>
 
+  <div id="cam" style="position:absolute;inset:0;transform-origin:960px 540px">
   <!-- 1 · logo -->
   <div class="capa centro" id="s1">
     <img id="logo1" src="logo.png" style="width:220px;height:220px;border-radius:50px;box-shadow:0 40px 90px rgba(255,106,43,.35)">
@@ -232,8 +233,8 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
     </div>
 
     <div id="onda"></div>
+    <div id="dedo"></div>
   </div></div>
-  <div id="dedo"></div>
 
   <!-- 7 · funciones -->
   <div class="capa" id="s7">
@@ -243,7 +244,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
       <div class="func"><i style="background:rgba(91,155,255,.16);color:#5B9BFF"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M10 21v-4h4v4"/></svg></i><b>Varios hoteles</b><span>Una cuenta para todos. Cada aviso dice su hotel.</span></div>
       <div class="func"><i style="background:rgba(245,163,59,.16);color:#F5A33B"><svg viewBox="0 0 24 24"><path d="M8 7h8M8 11h8M8 15h5"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg></i><b>Historial y PDF</b><span>Busca cualquier avería y saca su informe.</span></div>
       <div class="func"><i style="background:rgba(61,214,140,.16);color:#3DD68C"><svg viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 0 0-5-2M9 20H2v-2a4 4 0 0 1 8 0zM6 11a3 3 0 1 0 0-.01M16 11a3 3 0 1 0 0-.01"/></svg></i><b>Chat con técnicos</b><span>General, por avería y con todo el equipo.</span></div>
-      <div class="func"><i style="background:rgba(168,139,255,.16);color:#A88BFF"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/></svg></i><b>Registro</b><span>Lo eliminado se guarda. Nadie puede mentir.</span></div>
+      <div class="func"><i style="background:rgba(168,139,255,.16);color:#A88BFF"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/></svg></i><b>Registro</b><span>Lo eliminado se guarda. Todo queda por escrito.</span></div>
     </div>
   </div>
 
@@ -259,6 +260,7 @@ svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; 
     <div class="t-m" style="margin-top:26px;font-size:26px">En iPhone y Android</div>
   </div>
 
+  </div>
   <div id="marca-agua"><img src="logo.png">Avisaya</div>
 </div>
 
@@ -290,8 +292,8 @@ const P0 = { x: 1236, y: 86 };
 const toques = [
   // [segundo, x, y] dentro de la pantalla
   [12.5, 220, 238], [14.3, 360, 412], [17.6, 219, 680], [19.0, 219, 840],
-  [24.0, 219, 130], [26.2, 219, 400],
-  [31.2, 219, 400], [33.6, 219, 400],
+  [24.0, 219, 130], [26.2, 219, 372],
+  [31.2, 219, 372], [33.6, 219, 372],
 ];
 const dedo = $('dedo'), onda = $('onda');
 function moverDedo(t) {
@@ -312,7 +314,7 @@ function moverDedo(t) {
   }
   for (const [tt] of toques) if (t > tt - 0.08 && t < tt + 0.22) presion = Math.sin(tramo(t, tt - 0.08, tt + 0.22) * Math.PI);
   dedo.style.opacity = visible ? 1 : 0;
-  dedo.style.left = P0.x + x + 'px'; dedo.style.top = P0.y + y + 'px';
+  dedo.style.left = x + 'px'; dedo.style.top = y + 'px';
   dedo.style.transform = `scale(${1 - presion * 0.22})`;
   // onda al pulsar
   let o = 0, s = 1, ox = 0, oy = 0;
@@ -342,7 +344,36 @@ function ponerEstado(n, k) {
   const a = $('accion'); a.textContent = BOTONES[n][0]; a.style.background = BOTONES[n][1];
 }
 
+// Cámara de toda la escena: empuje lento en cada escena y golpes de zoom en los momentos fuertes
+function camara(t) {
+  const escenas = [[0, 4.6], [4.6, 11], [11, 21], [21, 29], [29, 37], [37, 45], [45, 52], [52, 58], [58, 65]];
+  let s = 1;
+  for (const [a, b] of escenas) if (t >= a && t < b) s = 1 + 0.045 * entraSale(tramo(t, a, b));
+  // golpe al entrar en algunas escenas (aparece desde un poco más cerca)
+  for (const a of [4.6, 11, 21, 29, 37, 45, 58]) s += 0.08 * (1 - sale(tramo(t, a, a + 0.9))) * (t >= a ? 1 : 0);
+  // beneficios: cada frase entra con un golpe de zoom
+  if (t >= 52 && t < 58) { const l = (t - 52) % 1.5; s = 1.16 - 0.16 * sale(cl(l / 0.55)) + 0.03 * cl(l / 1.5); }
+  return s;
+}
+// Zoom sobre el móvil: [segundo, escala, punto de la pantalla en el que se acerca]
+const ZOOM = [
+  [11, 1, 235, 470], [12.0, 1, 235, 470], [12.7, 1.45, 235, 270], [13.9, 1.45, 235, 280], [14.5, 1.42, 300, 420], [15.1, 1.4, 235, 500],
+  [16.9, 1.4, 235, 520], [17.5, 1.28, 235, 690], [18.5, 1.25, 235, 820], [19.9, 1.25, 235, 820], [20.6, 1, 235, 470],
+  [21, 1, 235, 470], [21.6, 1.42, 235, 170], [22.9, 1.4, 235, 230], [23.7, 1.35, 235, 330], [24.5, 1.15, 235, 420], [25.6, 1.38, 235, 400], [27.2, 1.38, 235, 400], [28.2, 1, 235, 470],
+  [29, 1, 235, 470], [30.4, 1.3, 235, 330], [33.2, 1.3, 235, 360], [34.2, 1.32, 235, 540], [36.0, 1.32, 235, 540], [36.8, 1, 235, 470],
+  [37, 1, 235, 470], [37.9, 1.38, 235, 690], [41.0, 1.4, 235, 740], [43.8, 1.4, 235, 760], [44.6, 1, 235, 470],
+];
+function zoomMovil(t) {
+  if (t <= ZOOM[0][0]) return ZOOM[0];
+  for (let i = 1; i < ZOOM.length; i++) {
+    const a = ZOOM[i - 1], b = ZOOM[i];
+    if (t <= b[0]) { const k = entraSale(tramo(t, a[0], b[0])); return [t, mezcla(a[1], b[1], k), mezcla(a[2], b[2], k), mezcla(a[3], b[3], k)]; }
+  }
+  return ZOOM[ZOOM.length - 1];
+}
+
 function render(t) {
+  $('cam').style.transform = `scale(${camara(t)})`;
   // fondo: masas de color que se mueven despacio
   const m = [[$('m1'), 900, 0.35, 0.3, 255, 106, 43, 0.55], [$('m2'), 1100, 0.75, 0.75, 150, 52, 14, 0.5], [$('m3'), 700, 0.6, 0.2, 255, 150, 90, 0.25], [$('m4'), 900, 0.15, 0.85, 16, 70, 62, 0.55]];
   m.forEach(([el, r, cx, cy, R, G, B, a], i) => {
@@ -377,7 +408,9 @@ function render(t) {
   // el móvil: entra en la 3 y sale tras la 6 (11–45)
   const vm = ventana(t, 11, 45, 0.7);
   $('movil').style.opacity = vm;
-  $('movil').style.transform = `translateY(${(1 - sale(tramo(t, 11, 11.9))) * 120 + tramo(t, 44.3, 45) * 60}px) rotate(${Math.sin(t * 0.4) * 0.6}deg)`;
+  const [, zs, zx, zy] = zoomMovil(t);
+  $('movil').style.transformOrigin = `${zx + 16}px ${zy + 16}px`;
+  $('movil').style.transform = `translateY(${(1 - sale(tramo(t, 11, 11.9))) * 120 + tramo(t, 44.3, 45) * 60}px) rotate(${Math.sin(t * 0.4) * 0.6}deg) scale(${zs})`;
   moverDedo(t);
 
   // textos de los pasos
@@ -446,7 +479,7 @@ function render(t) {
   });
 
   // 8 · beneficios (52–58)
-  const BEN = [['Sin llamadas.', 'Todo el aviso, en un toque.'], ['Con foto.', 'El técnico sabe qué llevar.'], ['Con hora.', 'Cada paso queda guardado.'], ['Sin mentiras.', 'Los chats no se pueden borrar.']];
+  const BEN = [['Sin llamadas.', 'Todo el aviso, en un toque.'], ['Con foto.', 'El técnico sabe qué llevar.'], ['Con hora.', 'Cada paso queda guardado.'], ['Sin malentendidos.', 'Todo queda por escrito.']];
   $('s8').style.opacity = ventana(t, 52, 58, 0.4);
   const i8 = cl(Math.floor((t - 52) / 1.5), 0, 3), l8 = (t - 52) - i8 * 1.5;
   const k8 = sale(cl(l8 / 0.45)) * (1 - entraSale(cl((l8 - 1.15) / 0.35)));
