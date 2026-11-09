@@ -4,6 +4,7 @@ import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, 
 import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMensajes, type Conv, type Mensaje } from '../lib/chat';
+import { exportarConversacion } from '../lib/informe';
 import { useSesion } from '../lib/sesion';
 import { supabase } from '../lib/supabase';
 import { color, fuente, ROLES, suave, type Perfil, type Rol } from '../lib/tema';
@@ -69,6 +70,18 @@ export function ChatVista({ conv, titulo, subtitulo, onVolver, vacio }: Props) {
   const [teclado, setTeclado] = useState(false);
   const nombresHotel = useMemo(() => Object.fromEntries(hoteles.map((h) => [h.id, h.nombre])) as Record<string, string>, [hoteles]);
   const esGlobal = conv?.tipo === 'g';
+  const [exportando, setExportando] = useState(false);
+
+  async function exportar() {
+    setExportando(true);
+    try {
+      await exportarConversacion(titulo, subtitulo, mensajes.filter((m) => !m.enviando), perfiles);
+    } catch {
+      setErrorEnvio('No se ha podido crear el PDF de la conversación.');
+    } finally {
+      setExportando(false);
+    }
+  }
 
   useEffect(() => {
     let vivo = true;
@@ -134,6 +147,9 @@ export function ChatVista({ conv, titulo, subtitulo, onVolver, vacio }: Props) {
             {subtitulo}
           </Text>
         </View>
+        <Pulsable onPress={exportar} disabled={exportando || !mensajes.length} style={[s.volver, (exportando || !mensajes.length) && { opacity: 0.4 }]} accessibilityRole="button" accessibilityLabel="Guardar la conversación en PDF">
+          <MaterialCommunityIcons name="file-download-outline" size={21} color={color.tinta} />
+        </Pulsable>
       </View>
 
       <Animated.FlatList

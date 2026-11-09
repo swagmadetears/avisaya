@@ -214,6 +214,7 @@ export default function PerfilPestana() {
         {perfil.rol === 'admin' ? (
           <Seccion titulo="Administración" orden={3}>
             <Fila icono="account-group-outline" tono={color.acento} titulo="Equipo" valor="Personas y accesos" onPress={() => router.push('/equipo')} />
+            <Fila icono="archive-clock-outline" tono={color.curso} titulo="Registro de eliminados" valor="Partes, avisos y chats" onPress={() => router.push('/registro')} />
           </Seccion>
         ) : null}
 

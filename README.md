@@ -12,6 +12,7 @@ avisaya/
 ├── supabase/05_avisos.sql          ← avisos generales del tablón (pegar después del 04)
 ├── supabase/06_chats.sql           ← bandeja de chats, chat global con técnicos y «leído» (pegar después del 05)
 ├── supabase/07_borrar.sql          ← administración y recepción pueden eliminar partes y avisos (pegar después del 06)
+├── supabase/08_registro.sql        ← los chats no se borran y lo eliminado queda en un registro (pegar después del 07)
 └── movil/                    ← app para iPhone y Android (Expo / React Native)
 ```
 

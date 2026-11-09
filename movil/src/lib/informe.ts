@@ -68,7 +68,20 @@ async function aBase64(url: string): Promise<string | null> {
   }
 }
 
-export function htmlInforme(p: Parte, hotel: Hotel, perfiles: Record<string, Perfil>, eventos: Evento[], foto: string | null): string {
+export type LineaChat = { autor_id: string; texto: string; creado_en: string };
+
+/** Mensajes de una conversación, en orden y con quién y cuándo: para que quede constancia. */
+function htmlChat(mensajes: LineaChat[], perfiles: Record<string, Perfil>): string {
+  if (!mensajes.length) return '<p class="sub">Sin mensajes.</p>';
+  return `<table class="chat">${mensajes
+    .map((m) => {
+      const a = perfiles[m.autor_id];
+      return `<tr><td class="cuando">${esc(fecha(m.creado_en))}</td><td class="quien">${esc(a ? `${a.nombre} (${ROLES[a.rol]})` : 'Usuario')}</td><td>${esc(m.texto)}</td></tr>`;
+    })
+    .join('')}</table>`;
+}
+
+export function htmlInforme(p: Parte, hotel: Hotel, perfiles: Record<string, Perfil>, eventos: Evento[], foto: string | null, chat: LineaChat[] = []): string {
   const creador = p.creado_por ? perfiles[p.creado_por] : undefined;
   const tecnico = p.tecnico_id ? perfiles[p.tecnico_id] : undefined;
   const t = tiempos(p, eventos);
@@ -100,6 +113,7 @@ export function htmlInforme(p: Parte, hotel: Hotel, perfiles: Record<string, Per
     .tiempos b { font-size: 13pt; }
     ol { padding-left: 18px; margin: 6px 0; } li { margin: 4px 0; } li span { color: #5A6B66; font-family: Menlo, 'Courier New', monospace; font-size: 9.5pt; margin-right: 8px; }
     img { max-width: 100%; max-height: 90mm; border-radius: 8px; border: 1px solid #D6E0DC; }
+    table.chat td { font-size: 9.5pt; } table.chat .cuando { width: 22%; color: #5A6B66; font-family: Menlo, 'Courier New', monospace; font-size: 8.5pt; white-space: nowrap; } table.chat .quien { width: 24%; font-weight: 600; }
     .pie { margin-top: 24px; padding-top: 8px; border-top: 1px solid #D6E0DC; font-size: 8.5pt; color: #5A6B66; }
   </style></head><body>
     <div class="cab">
@@ -131,17 +145,44 @@ export function htmlInforme(p: Parte, hotel: Hotel, perfiles: Record<string, Per
     </div>
     <h2>Historial</h2>
     <ol>${eventos.map((e) => `<li><span>${esc(fecha(e.creado_en))}</span>${esc(textoEvento(e, perfiles))}</li>`).join('') || '<li>Sin movimientos registrados.</li>'}</ol>
-    <div class="pie">Generado con Avisaya el ${esc(fecha(new Date().toISOString()))}. Los datos reflejan el estado del parte en ese momento.</div>
+    <h2>Chat de la avería</h2>
+    ${htmlChat(chat, perfiles)}
+    <div class="pie">Generado con Avisaya el ${esc(fecha(new Date().toISOString()))}. Los datos reflejan el estado del parte en ese momento. Los mensajes del chat no se pueden borrar ni modificar.</div>
   </body></html>`;
 }
 
 /** Crea el PDF del parte y abre el menú para verlo, guardarlo o enviarlo. */
 export async function compartirInforme(p: Parte, hotel: Hotel, perfiles: Record<string, Perfil>, eventos: Evento[], fotoUrl?: string) {
   const foto = fotoUrl ? await aBase64(fotoUrl) : null;
-  const { uri } = await Print.printToFileAsync({ html: htmlInforme(p, hotel, perfiles, eventos, foto) });
+  const { data } = await supabase.from('mensajes').select('autor_id, texto, creado_en').eq('parte_id', p.id).order('creado_en', { ascending: true });
+  const { uri } = await Print.printToFileAsync({ html: htmlInforme(p, hotel, perfiles, eventos, foto, (data ?? []) as LineaChat[]) });
   if (await Sharing.isAvailableAsync()) {
     await Sharing.shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: `Informe ${codigoParte(p)}` });
   } else {
     await Print.printAsync({ uri });
   }
+}
+
+/** PDF con toda una conversación (quién, cuándo y qué dijo), para guardarla o enviarla. */
+export async function exportarConversacion(titulo: string, subtitulo: string, mensajes: LineaChat[], perfiles: Record<string, Perfil>) {
+  const orden = [...mensajes].sort((a, b) => a.creado_en.localeCompare(b.creado_en));
+  const html = `<!doctype html><html><head><meta charset="utf-8"><style>
+    @page { margin: 16mm 14mm; }
+    body { font-family: -apple-system, 'Helvetica Neue', Roboto, Arial, sans-serif; color: #0F1F1C; font-size: 10.5pt; margin: 0; }
+    .cab { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #0B3D37; padding-bottom: 10px; }
+    .marca { font-size: 20pt; font-weight: 800; color: #0B3D37; } .marca span { color: #E4561B; }
+    .der { text-align: right; font-size: 9.5pt; color: #5A6B66; }
+    h1 { font-size: 16pt; margin: 16px 0 2px; } .sub { color: #5A6B66; margin: 0 0 12px; }
+    table { width: 100%; border-collapse: collapse; } td { padding: 6px 8px; border-bottom: 1px solid #D6E0DC; vertical-align: top; font-size: 9.5pt; }
+    .cuando { width: 22%; color: #5A6B66; font-family: Menlo, 'Courier New', monospace; font-size: 8.5pt; white-space: nowrap; } .quien { width: 24%; font-weight: 600; }
+    .pie { margin-top: 18px; padding-top: 8px; border-top: 1px solid #D6E0DC; font-size: 8.5pt; color: #5A6B66; }
+  </style></head><body>
+    <div class="cab"><div class="marca">Avisa<span>ya</span></div><div class="der">Registro de conversación<br>${esc(orden.length + ' mensajes')}</div></div>
+    <h1>${esc(titulo)}</h1><p class="sub">${esc(subtitulo)}${orden.length ? ` · del ${esc(fecha(orden[0].creado_en))} al ${esc(fecha(orden[orden.length - 1].creado_en))}` : ''}</p>
+    ${htmlChat(orden, perfiles)}
+    <div class="pie">Generado con Avisaya el ${esc(fecha(new Date().toISOString()))}. Los mensajes no se pueden borrar ni modificar en la app.</div>
+  </body></html>`;
+  const { uri } = await Print.printToFileAsync({ html });
+  if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(uri, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf', dialogTitle: titulo });
+  else await Print.printAsync({ uri });
 }
