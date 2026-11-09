@@ -78,7 +78,8 @@ export default function Layout() {
           <Stack.Screen name="nuevo" options={{ presentation: 'modal' }} />
           <Stack.Screen name="aviso" options={{ presentation: 'formSheet', sheetGrabberVisible: true, sheetAllowedDetents: [0.75, 1], sheetCornerRadius: 24 }} />
           <Stack.Screen name="equipo" />
-          <Stack.Screen name="registro" />
+          <Stack.Screen name="registro/index" />
+          <Stack.Screen name="registro/[id]" />
           <Stack.Screen name="desactivada" />
           <Stack.Screen name="pendiente" />
           <Stack.Screen name="nueva-clave" />

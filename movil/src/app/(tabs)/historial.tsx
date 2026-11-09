@@ -13,7 +13,7 @@ import { buscarPartes } from '../../lib/partes';
 import { useSesion } from '../../lib/sesion';
 import { categoria, color, esHabitacion, ESTADOS, fuente, hace, suave, type Parte } from '../../lib/tema';
 
-type Vista = 'resueltos' | 'todos';
+type Vista = 'resueltos' | 'abiertos';
 
 /** Historial: todos los partes, también los de hace meses, con buscador y filtro por fecha. */
 export default function Historial() {
@@ -64,7 +64,7 @@ export default function Historial() {
   }, [q, desde, hasta, hotelSel, vuelta]);
 
   const lista = useMemo(() => {
-    const l = (partes ?? []).filter((p) => vista === 'todos' || p.estado === 'resuelto');
+    const l = (partes ?? []).filter((p) => (vista === 'resueltos' ? p.estado === 'resuelto' : p.estado !== 'resuelto'));
     return l.sort((a, b) => (b.resuelto_en ?? b.creado_en).localeCompare(a.resuelto_en ?? a.creado_en));
   }, [partes, vista]);
 
@@ -114,9 +114,9 @@ export default function Historial() {
       <FiltroFecha valor={rango} onCambio={setRango} />
 
       <View style={s.segmento}>
-        {(['resueltos', 'todos'] as Vista[]).map((v) => (
+        {(['resueltos', 'abiertos'] as Vista[]).map((v) => (
           <Pulsable key={v} vibra="seleccion" onPress={() => setVista(v)} style={[s.segmentoOpcion, vista === v && s.segmentoActivo]} accessibilityRole="tab" accessibilityState={{ selected: vista === v }}>
-            <Text style={[s.segmentoTexto, vista === v && { color: color.tinta }]}>{v === 'resueltos' ? 'Resueltos' : 'Todos los partes'}</Text>
+            <Text style={[s.segmentoTexto, vista === v && { color: color.tinta }]}>{v === 'resueltos' ? `Resueltos${partes ? ` ${(partes ?? []).filter((p) => p.estado === 'resuelto').length}` : ''}` : `Sin resolver${partes ? ` ${(partes ?? []).filter((p) => p.estado !== 'resuelto').length}` : ''}`}</Text>
           </Pulsable>
         ))}
       </View>
@@ -158,7 +158,7 @@ export default function Historial() {
             </View>
           ) : (
             <Entra>
-              <Text style={s.vacio}>{q || rango.tipo !== 'todas' ? 'Ningún parte coincide con la búsqueda.' : 'Aún no hay partes resueltos.'}</Text>
+              <Text style={s.vacio}>{q || rango.tipo !== 'todas' ? 'Ningún parte coincide con la búsqueda.' : vista === 'resueltos' ? 'Aún no hay partes resueltos.' : 'No hay partes sin resolver.'}</Text>
             </Entra>
           )
         }
