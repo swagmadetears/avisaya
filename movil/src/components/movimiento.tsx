@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Pressable, View, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
@@ -38,16 +38,21 @@ type PulsableProps = Omit<PressableProps, 'style'> & {
 export function Pulsable({ style, encoge = 0.97, vibra = 'ligero', onPressIn, onPressOut, onPress, disabled, ...rest }: PulsableProps) {
   const escala = useSharedValue(1);
   const reducido = useReducedMotion();
+  // Reanimated no acepta estilos en forma de función: se resuelven aquí con el estado de pulsado
+  const [pulsado, setPulsado] = useState(false);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: escala.get() }] }));
+  const base = typeof style === 'function' ? style({ pressed: pulsado }) : style;
   return (
     <PressableAnimado
       {...rest}
       disabled={disabled}
       onPressIn={(e) => {
+        setPulsado(true);
         if (!reducido) escala.set(withSpring(encoge, movimiento.resorte));
         onPressIn?.(e);
       }}
       onPressOut={(e) => {
+        setPulsado(false);
         escala.set(withSpring(1, movimiento.resorte));
         onPressOut?.(e);
       }}
@@ -55,7 +60,7 @@ export function Pulsable({ style, encoge = 0.97, vibra = 'ligero', onPressIn, on
         if (vibra) toque(vibra);
         onPress?.(e);
       }}
-      style={(estado: { pressed: boolean }) => [typeof style === 'function' ? style(estado) : style, anim]}
+      style={[base, anim]}
     />
   );
 }

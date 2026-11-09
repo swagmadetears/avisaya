@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
@@ -17,6 +18,7 @@ import {
   type Parte,
   type Perfil,
 } from '../lib/tema';
+import { Pulsable } from './movimiento';
 import { Boton, Insignia } from './ui';
 
 export type Accion = 'camino' | 'empezar' | 'soltar' | 'esperar' | 'resolver' | 'reabrir';
@@ -84,6 +86,7 @@ function acciones(p: Parte, yo: Perfil): { a: Accion; texto: string; tipo: 'prin
 }
 
 function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onFoto, onDetalle, hotelNombre }: Props) {
+  const router = useRouter();
   const cat = categoria(p.categoria);
   const abierto = p.estado !== 'resuelto';
   const hab = esHabitacion(p.habitacion);
@@ -160,11 +163,16 @@ function ParteTarjetaBase({ parte: p, yo, perfiles, foto, ocupado, onAccion, onF
           ))}
         </View>
       ) : null}
-      <Pressable onPress={() => onDetalle(p)} style={s.detalle} accessibilityRole="button" accessibilityLabel="Ver detalle e informe PDF">
-        <MaterialCommunityIcons name="file-document-outline" size={17} color={color.marca2} />
-        <Text style={s.detalleTexto}>Detalle e informe PDF</Text>
-        <MaterialCommunityIcons name="chevron-right" size={18} color={color.apagado} />
-      </Pressable>
+      <View style={s.pie}>
+        <Pulsable onPress={() => onDetalle(p)} style={s.detalle} accessibilityRole="button" accessibilityLabel="Ver detalle e informe PDF">
+          <MaterialCommunityIcons name="file-document-outline" size={17} color={color.marca2} />
+          <Text style={s.detalleTexto}>Detalle y PDF</Text>
+        </Pulsable>
+        <Pulsable onPress={() => router.push(`/parte/chat/${p.id}`)} style={s.detalle} accessibilityRole="button" accessibilityLabel="Abrir el chat de esta avería">
+          <MaterialCommunityIcons name="chat-processing-outline" size={17} color={color.acento} />
+          <Text style={[s.detalleTexto, { color: color.acento }]}>Chat</Text>
+        </Pulsable>
+      </View>
     </View>
   );
 }
@@ -211,6 +219,7 @@ const s = StyleSheet.create({
   tarde: { color: color.pendiente, fontFamily: fuente.textoFuerte },
   nota: { fontFamily: fuente.texto, fontSize: 14, color: color.tinta, backgroundColor: suave(color.ok, 0.12), borderRadius: 10, padding: 10 },
   acciones: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  detalle: { flexDirection: 'row', alignItems: 'center', gap: 8, borderTopWidth: 1, borderTopColor: color.linea, paddingTop: 10, marginTop: -2 },
-  detalleTexto: { flex: 1, fontFamily: fuente.textoFuerte, fontSize: 14, color: color.marca2 },
+  pie: { flexDirection: 'row', gap: 8, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.linea, paddingTop: 10, marginTop: -2 },
+  detalle: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8, borderRadius: 12, backgroundColor: color.elevado },
+  detalleTexto: { fontFamily: fuente.textoFuerte, fontSize: 14, color: color.marca2 },
 });

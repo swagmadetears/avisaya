@@ -1,1 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#e4561b"/><path d="M19.6 8.4a5.3 5.3 0 0 0-7.2 7.2L4 24l4 4 8.4-8.4a5.3 5.3 0 0 0 7.2-7.2l-3.3 3.3-3.2-.8-.8-3.2z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(1.5 -2.5) scale(.95)"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF9A5C"/>
+      <stop offset=".55" stop-color="#F0621F"/>
+      <stop offset="1" stop-color="#C9420E"/>
+    </linearGradient>
+    <radialGradient id="luz" cx=".3" cy=".18" r=".7">
+      <stop offset="0" stop-color="#fff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="url(#g)"/>
+  <rect width="1024" height="1024" rx="230" fill="url(#luz)"/>
+  <mask id="hueco"><rect width="1024" height="1024" fill="#fff"/><circle cx="748" cy="282" r="122" fill="#000"/></mask>
+  <g mask="url(#hueco)">
+  <path d="M262 760 L512 282 L762 760" fill="none" stroke="#fff" stroke-width="112" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M378 590 H646" fill="none" stroke="#fff" stroke-width="96" stroke-linecap="round"/>
+  </g>
+  <circle cx="748" cy="282" r="80" fill="#fff"/>
+</svg>

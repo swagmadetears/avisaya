@@ -81,7 +81,7 @@ export default function Equipo() {
           <View style={{ gap: 12, marginBottom: 4 }}>
             <View style={s.buscador}>
               <MaterialCommunityIcons name="magnify" size={20} color={color.apagado} />
-              <TextInput value={filtro} onChangeText={setFiltro} placeholder="Buscar por nombre, correo o departamento" placeholderTextColor={color.apagado} style={s.buscadorInput} autoCorrect={false} />
+              <TextInput selectionColor={color.acento} cursorColor={color.acento} selectionHandleColor={color.acento} value={filtro} onChangeText={setFiltro} placeholder="Buscar por nombre, correo o departamento" placeholderTextColor={color.apagado} style={s.buscadorInput} autoCorrect={false} />
             </View>
             <Aviso texto={error} />
             <Text style={s.seccion}>

@@ -39,18 +39,24 @@ language plpgsql security definer set search_path = public as $$
 declare
   quien    text;
   hotel    text;
+  sitio    text := '';
   envios   jsonb;
 begin
   select nombre into quien from public.perfiles where id = new.autor_id;
   select nombre into hotel from public.hoteles where id = new.hotel_id;
+  -- En el chat de una avería, el aviso dice de qué habitación es
+  if new.parte_id is not null then
+    select ' · ' || case when habitacion ~ '^[0-9]{1,5}[a-zA-Z]?$' then 'Hab. ' else '' end || habitacion || ' (' || categoria || ')'
+      into sitio from public.partes where id = new.parte_id;
+  end if;
   select jsonb_agg(jsonb_build_object(
            'to', d.token,
-           'title', coalesce(hotel, 'Avisaya') || ' · ' || coalesce(quien, 'Equipo'),
+           'title', coalesce(hotel, 'Avisaya') || coalesce(sitio, '') || ' · ' || coalesce(quien, 'Equipo'),
            'body', left(new.texto, 180),
            'sound', 'default',
            'priority', 'high',
            'channelId', 'partes',
-           'data', jsonb_build_object('tipo', 'mensaje', 'hotel_id', new.hotel_id)))
+           'data', jsonb_build_object('tipo', 'mensaje', 'hotel_id', new.hotel_id, 'parte_id', new.parte_id)))
     into envios
     from public.dispositivos d
     join public.perfiles p on p.id = d.perfil_id

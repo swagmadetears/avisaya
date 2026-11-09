@@ -1,10 +1,10 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Aviso, Boton, Campo } from '../components/ui';
 import { useSesion } from '../lib/sesion';
 import { mensajeError, supabase } from '../lib/supabase';
+import { Logo } from '../components/Logo';
 import { color, fuente, sombra } from '../lib/tema';
 
 export default function Entrar() {
@@ -43,9 +43,7 @@ export default function Entrar() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View style={[s.hero, { paddingTop: insets.top + 36 }]}>
-          <View style={s.logo}>
-            <MaterialCommunityIcons name="wrench" size={26} color="#fff" />
-          </View>
+          <Logo tamano={64} />
           <Text style={s.titulo}>Avisaya</Text>
           <Text style={s.lema}>Averías del hotel, desde quien las ve hasta quien las arregla.</Text>
         </View>

@@ -74,6 +74,7 @@ export default function Layout() {
           <Stack.Screen name="hotel" />
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
           <Stack.Screen name="parte/[id]" />
+          <Stack.Screen name="parte/chat/[id]" />
           <Stack.Screen name="nuevo" options={{ presentation: 'modal' }} />
           <Stack.Screen name="aviso" options={{ presentation: 'formSheet', sheetGrabberVisible: true, sheetAllowedDetents: [0.75, 1], sheetCornerRadius: 24 }} />
           <Stack.Screen name="equipo" />

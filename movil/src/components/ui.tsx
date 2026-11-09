@@ -54,7 +54,7 @@ export function Campo(props: TextInputProps & { etiqueta: string; grande?: boole
   return (
     <View style={{ gap: 6 }}>
       <Etiqueta>{etiqueta}</Etiqueta>
-      <TextInput placeholderTextColor={color.apagado} {...rest} style={[s.input, grande && s.inputGrande, style]} />
+      <TextInput selectionColor={color.acento} cursorColor={color.acento} selectionHandleColor={color.acento} placeholderTextColor={color.apagado} {...rest} style={[s.input, grande && s.inputGrande, style]} />
     </View>
   );
 }

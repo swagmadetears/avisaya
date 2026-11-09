@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Pulsable } from '../../components/movimiento';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -72,7 +73,7 @@ export default function DetalleParte() {
   const cabecera = (
     <View style={[s.barra, { paddingTop: Platform.OS === 'ios' ? insets.top + 6 : insets.top + 10 }]}>
       <Pressable onPress={() => router.back()} style={s.volver} accessibilityRole="button" accessibilityLabel="Volver">
-        <MaterialCommunityIcons name="arrow-left" size={22} color="#fff" />
+        <MaterialCommunityIcons name="chevron-left" size={26} color={color.tinta} />
       </Pressable>
       <View style={{ flex: 1 }}>
         <Text style={s.barraTitulo}>Detalle del parte</Text>
@@ -85,7 +86,7 @@ export default function DetalleParte() {
     return (
       <View style={{ flex: 1, backgroundColor: color.fondo }}>
         {cabecera}
-        <View style={s.centro}>{cargando ? <ActivityIndicator color={color.marca} /> : <Aviso texto={error} />}</View>
+        <View style={s.centro}>{cargando ? <ActivityIndicator color={color.apagado} /> : <Aviso texto={error} />}</View>
       </View>
     );
   }
@@ -102,7 +103,7 @@ export default function DetalleParte() {
       {cabecera}
       <ScrollView
         contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: insets.bottom + 32 }}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={cargar} tintColor={color.marca} />}>
+        refreshControl={<RefreshControl refreshing={false} onRefresh={cargar} tintColor={color.apagado} />}>
         <View style={s.tarjeta}>
           <View style={s.fila}>
             <View style={[s.catIcono, { backgroundColor: suave(cat.color, 0.15) }]}>
@@ -127,6 +128,17 @@ export default function DetalleParte() {
             </View>
           ) : null}
         </View>
+
+        <Pulsable onPress={() => router.push(`/parte/chat/${parte.id}`)} style={s.chat} accessibilityRole="button" accessibilityLabel="Abrir el chat de esta avería">
+          <View style={s.chatIcono}>
+            <MaterialCommunityIcons name="chat-processing-outline" size={22} color={color.acento} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.chatTitulo}>Chat de la avería</Text>
+            <Text style={s.chatSub}>Pregunta al técnico cómo va o avisa de algo</Text>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={22} color={color.apagado} />
+        </Pulsable>
 
         <View style={s.tarjeta}>
           <Dato k="Avisó" v={creador ? `${creador.nombre} (${ROLES[creador.rol]})` : '—'} />
@@ -188,10 +200,14 @@ function Tiempo({ k, v }: { k: string; v: string }) {
 }
 
 const s = StyleSheet.create({
-  barra: { backgroundColor: color.marca, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 14 },
-  volver: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
-  barraTitulo: { fontFamily: fuente.titulo, fontSize: 17, color: '#fff' },
-  barraSub: { fontFamily: fuente.numero, fontSize: 13, color: 'rgba(255,255,255,0.8)' },
+  chat: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: color.superficie, borderRadius: 18, borderCurve: 'continuous', padding: 14, borderWidth: 1, borderColor: suave(color.acento, 0.35) },
+  chatIcono: { width: 44, height: 44, borderRadius: 14, borderCurve: 'continuous', backgroundColor: suave(color.acento, 0.15), alignItems: 'center', justifyContent: 'center' },
+  chatTitulo: { fontFamily: fuente.textoFuerte, fontSize: 16, color: color.tinta },
+  chatSub: { fontFamily: fuente.texto, fontSize: 13.5, color: color.apagado },
+  barra: { backgroundColor: color.fondo, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: color.linea },
+  volver: { width: 40, height: 40, borderRadius: 20, backgroundColor: color.superficie, alignItems: 'center', justifyContent: 'center' },
+  barraTitulo: { fontFamily: fuente.titulo, fontSize: 18, color: color.tinta },
+  barraSub: { fontFamily: fuente.numero, fontSize: 12.5, color: color.apagado },
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   tarjeta: { backgroundColor: color.superficie, borderRadius: 18, padding: 16, gap: 12, ...sombra },
   fila: { flexDirection: 'row', alignItems: 'center', gap: 12 },

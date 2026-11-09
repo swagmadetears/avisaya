@@ -14,6 +14,7 @@ import { useHotelElegido } from '../../lib/hotel-elegido';
 import { usePartes, type CambioParte } from '../../lib/partes';
 import { useSesion } from '../../lib/sesion';
 import { supabase } from '../../lib/supabase';
+import { Logo } from '../../components/Logo';
 import { color, esHabitacion, esHoy, fuente, ROLES, sombra, suave, type NombreIcono, type Parte } from '../../lib/tema';
 
 const PRIO = { urgente: 0, normal: 1, baja: 2 } as const;
@@ -297,9 +298,7 @@ export default function Averias() {
           onPress={() => setSelectorHotel(true)}
           accessibilityRole={varios ? 'button' : undefined}
           accessibilityLabel={varios ? 'Cambiar de hotel' : undefined}>
-          <View style={s.logo}>
-            <MaterialCommunityIcons name="wrench" size={15} color="#fff" />
-          </View>
+          <Logo tamano={28} />
           <Text style={s.hotel} numberOfLines={1}>
             {!varios ? hotel.nombre : hotelSel ? nombresHotel[hotelSel] : `Tus ${hoteles.length} hoteles`}
           </Text>
@@ -390,7 +389,7 @@ export default function Averias() {
             <Text style={s.hojaSub}>
               {resolviendo ? `${esHabitacion(resolviendo.habitacion) ? 'Hab. ' : ''}${resolviendo.habitacion} · ${resolviendo.categoria}` : ''}
             </Text>
-            <TextInput
+            <TextInput selectionColor={color.acento} cursorColor={color.acento} selectionHandleColor={color.acento}
               value={nota}
               onChangeText={setNota}
               placeholder="Qué has hecho (opcional). Ej. Cambiado el filtro del split"

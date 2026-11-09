@@ -52,8 +52,8 @@
 <script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
 <style>
   /* el logotipo de Avisaya: la llave sobre el cuadrado naranja de la app */
-  .logo-tile { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--p-accent); margin-right: var(--s-2); flex: none; }
-  .logo-tile svg { width: 16px; height: 16px; }
+  .logo-tile { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #FF9A5C, #F0621F 55%, #C9420E); margin-right: var(--s-2); flex: none; }
+  .logo-tile svg { width: 22px; height: 22px; }
   /* app-frame (sections-library.md) */
   .app.ui { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); margin-top: var(--s-7); background: var(--u-bg); border: 1px solid var(--u-border); border-radius: var(--u-r); box-shadow: var(--u-shadow); }
   .app > .app__pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; }
@@ -364,7 +364,7 @@
 <header class="nav nav--centre ground-inverse">
   <div class="wrap nav__bar">
     <a class="skip-link" href="#top">Saltar al contenido</a>
-    <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
+    <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><mask id="lgh"><rect width="24" height="24" fill="#fff"/><circle cx="17.6" cy="6.6" r="3.1" fill="#000"/></mask><g mask="url(#lgh)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 12 6.6 18 18" stroke-width="2.7"/><path d="M8.8 14h6.4" stroke-width="2.3"/></g><circle cx="17.6" cy="6.6" r="2" fill="#fff"/></svg></span>Avisaya</a>
     <nav class="nav__links" aria-label="Principal">
       <div class="nav__item"><a class="nav__link" href="#inicio">Inicio</a></div>
       <div class="nav__item"><a class="nav__link" href="#partes">Partes</a></div>
@@ -794,7 +794,7 @@
     </div>
     <div class="closing__links">
       <div class="foot">
-        <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Avisaya</a>
+        <a class="nav__logo" href="#inicio"><span class="logo-tile" aria-hidden="true"><svg viewBox="0 0 24 24"><mask id="lgh"><rect width="24" height="24" fill="#fff"/><circle cx="17.6" cy="6.6" r="3.1" fill="#000"/></mask><g mask="url(#lgh)" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 12 6.6 18 18" stroke-width="2.7"/><path d="M8.8 14h6.4" stroke-width="2.3"/></g><circle cx="17.6" cy="6.6" r="2" fill="#fff"/></svg></span>Avisaya</a>
         <ul class="foot__links"><li><a href="#partes">Partes</a></li><li><a href="#funciones">Funciones</a></li><li><a href="#informes">Informes</a></li><li><a href="#pasos">Equipo</a></li><li><a href="#preguntas">Preguntas</a></li><li><a href="mailto:hola@avisaya.example?subject=Pregunta%20sobre%20Avisaya">Escríbenos</a></li></ul>
       </div>
       <div class="footer__legal">

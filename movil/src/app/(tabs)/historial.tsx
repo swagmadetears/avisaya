@@ -94,7 +94,7 @@ export default function Historial() {
 
       <View style={s.buscador}>
         <MaterialCommunityIcons name="magnify" size={20} color={color.apagado} />
-        <TextInput
+        <TextInput selectionColor={color.acento} cursorColor={color.acento} selectionHandleColor={color.acento}
           value={texto}
           onChangeText={setTexto}
           placeholder="Habitación, avería, código o nombre"
