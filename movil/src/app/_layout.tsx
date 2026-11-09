@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { DarkTheme, ThemeProvider } from 'expo-router/react-navigation';
 import { SesionProvider, useSesion } from '../lib/sesion';
 import { color } from '../lib/tema';
 
@@ -39,7 +40,7 @@ function Guardian() {
             : null;
     const deEntrada = ['entrar', 'hotel', 'desactivada', 'pendiente', 'nueva-clave', ''];
     if (destino && actual !== destino) router.replace(`/${destino}`);
-    else if (!destino && deEntrada.includes(actual)) router.replace('/inicio');
+    else if (!destino && deEntrada.includes(actual)) router.replace('/averias');
   }, [cargando, perfilListo, session, perfil, hoteles.length, solicitudes.length, recuperando, segmentos, router]);
 
   return null;
@@ -63,23 +64,24 @@ export default function Layout() {
 
   return (
     <SafeAreaProvider>
+      <ThemeProvider value={{ ...DarkTheme, colors: { ...DarkTheme.colors, background: color.fondo, card: color.superficie, primary: color.acento, text: color.tinta, border: color.linea } }}>
       <SesionProvider>
         <StatusBar style="light" />
         <Guardian />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.fondo } }}>
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.fondo }, animation: 'ios_from_right', gestureEnabled: true }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="entrar" />
           <Stack.Screen name="hotel" />
-          <Stack.Screen name="inicio" />
+          <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
           <Stack.Screen name="parte/[id]" />
           <Stack.Screen name="nuevo" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="ajustes" options={{ presentation: 'modal' }} />
           <Stack.Screen name="equipo" />
           <Stack.Screen name="desactivada" />
           <Stack.Screen name="pendiente" />
           <Stack.Screen name="nueva-clave" />
         </Stack>
       </SesionProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

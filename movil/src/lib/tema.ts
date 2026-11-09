@@ -4,22 +4,23 @@ import type { MaterialCommunityIcons } from '@expo/vector-icons';
 export type NombreIcono = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 export const color = {
-  fondo: '#EEF3F1',
-  superficie: '#FFFFFF',
-  elevado: '#F5F8F7',
-  tinta: '#0F1F1C',
-  apagado: '#5A6B66',
-  linea: '#D6E0DC',
-  marca: '#0B3D37',
-  marca2: '#13574E',
+  // Tema oscuro (estilo iOS): negro de fondo, capas grises por encima y colores vivos para los estados
+  fondo: '#07090A',
+  superficie: '#15191A',
+  elevado: '#1E2324',
+  tinta: '#F3F5F5',
+  apagado: '#97A2A0',
+  linea: '#2A3133',
+  marca: '#0E3A34',
+  marca2: '#3FB7A6',
   sobreMarca: '#FFFFFF',
-  acento: '#E4561B',
+  acento: '#FF6A2B',
   sobreAcento: '#FFFFFF',
-  pendiente: '#CF3A28',
-  camino: '#2462C8',
-  curso: '#B46A00',
-  espera: '#6B4FC4',
-  ok: '#13894E',
+  pendiente: '#FF5C4A',
+  camino: '#5B9BFF',
+  curso: '#F5A33B',
+  espera: '#A88BFF',
+  ok: '#3DD68C',
 };
 
 /** Color con transparencia, para fondos suaves de iconos y etiquetas. */
@@ -38,11 +39,16 @@ export const fuente = {
 };
 
 export const sombra = {
-  shadowColor: '#0F1F1C',
-  shadowOpacity: 0.07,
-  shadowRadius: 12,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 2,
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+  borderCurve: 'continuous' as const,
+};
+
+/** Curvas y tiempos de las animaciones (resortes suaves, como en iOS). */
+export const movimiento = {
+  resorte: { damping: 18, stiffness: 220, mass: 0.9 },
+  resorteSuave: { damping: 22, stiffness: 140 },
+  entrada: 360,
+  escalonado: 45,
 };
 
 export type Rol = 'admin' | 'recepcion' | 'limpieza' | 'tecnico';

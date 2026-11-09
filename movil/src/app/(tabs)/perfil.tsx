@@ -1,14 +1,15 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Aviso, Boton, Campo } from '../components/ui';
-import { useSesion } from '../lib/sesion';
-import { mensajeError, supabase } from '../lib/supabase';
-import { color, fuente, ROLES, sombra, type Hotel } from '../lib/tema';
+import { Entra } from '../../components/movimiento';
+import { Aviso, Boton, Campo } from '../../components/ui';
+import { useSesion } from '../../lib/sesion';
+import { mensajeError, supabase } from '../../lib/supabase';
+import { color, fuente, ROLES, sombra, type Hotel } from '../../lib/tema';
 
-export default function Ajustes() {
+export default function PerfilPestana() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { perfil, hotel, hoteles, solicitudes, session, estadoPush, recargar, salir } = useSesion();
@@ -72,13 +73,20 @@ export default function Ajustes() {
 
   return (
     <View style={{ flex: 1, backgroundColor: color.fondo }}>
-      <View style={[s.barra, { paddingTop: Platform.OS === 'ios' ? 16 : insets.top + 12 }]}>
-        <Text style={s.titulo}>Ajustes</Text>
-        <Pressable onPress={() => router.back()} style={s.cerrar} accessibilityRole="button" accessibilityLabel="Cerrar">
-          <MaterialCommunityIcons name="close" size={22} color={color.tinta} />
-        </Pressable>
-      </View>
-      <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: insets.bottom + 32 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: insets.top + 12, gap: 14, paddingBottom: insets.bottom + 110 }} keyboardShouldPersistTaps="handled">
+        <Entra>
+          <View style={s.cabecera}>
+            <View style={s.avatar}>
+              <Text style={s.avatarTexto}>{perfil.nombre.trim().slice(0, 1).toUpperCase()}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.titulo}>Perfil</Text>
+              <Text style={s.ayuda} numberOfLines={1}>
+                {perfil.nombre} · {ROLES[perfil.rol]}
+              </Text>
+            </View>
+          </View>
+        </Entra>
         {perfil.rol === 'admin' ? (
           <Pressable onPress={() => router.push('/equipo')} style={s.equipo} accessibilityRole="button">
             <MaterialCommunityIcons name="account-group-outline" size={26} color={color.acento} />
@@ -190,9 +198,10 @@ function Fila({ etiqueta, valor }: { etiqueta: string; valor: string }) {
 }
 
 const s = StyleSheet.create({
-  barra: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 12, backgroundColor: color.superficie, borderBottomWidth: 1, borderBottomColor: color.linea },
-  titulo: { flex: 1, fontFamily: fuente.titulo, fontSize: 21, color: color.tinta },
-  cerrar: { width: 42, height: 42, borderRadius: 12, backgroundColor: color.elevado, alignItems: 'center', justifyContent: 'center' },
+  cabecera: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingBottom: 6 },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: color.acento, alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 20px rgba(255,106,43,0.3)' },
+  avatarTexto: { fontFamily: fuente.tituloFuerte, fontSize: 24, color: '#fff' },
+  titulo: { fontFamily: fuente.tituloFuerte, fontSize: 34, color: color.tinta, letterSpacing: -0.8 },
   tarjeta: { backgroundColor: color.superficie, borderRadius: 18, padding: 16, gap: 12, ...sombra },
   codigoCaja: { backgroundColor: color.marca, borderRadius: 18, padding: 16, gap: 8 },
   equipo: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: color.superficie, borderRadius: 18, padding: 16, borderWidth: 1.5, borderColor: color.acento, ...sombra },

@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, View, type StyleProp, type TextInputProps, type ViewStyle } from 'react-native';
 import { color, fuente, suave, type NombreIcono } from '../lib/tema';
+import { Pulsable } from './movimiento';
 
 type BotonProps = {
   texto: string;
@@ -20,15 +21,16 @@ export function Boton({ texto, onPress, tipo = 'normal', icono, cargando, desact
   const borde = tipo === 'normal' ? color.linea : fondo;
   const off = desactivado || cargando;
   return (
-    <Pressable
+    <Pulsable
       accessibilityRole="button"
       accessibilityState={{ disabled: !!off, busy: !!cargando }}
       onPress={onPress}
       disabled={off}
+      vibra={tipo === 'principal' || tipo === 'ok' ? 'medio' : 'ligero'}
       style={({ pressed }) => [
         s.boton,
         grande && s.botonGrande,
-        { backgroundColor: fondo, borderColor: borde, opacity: off ? 0.55 : pressed ? 0.85 : 1 },
+        { backgroundColor: fondo, borderColor: borde, opacity: off ? 0.5 : pressed ? 0.9 : 1 },
         style,
       ]}>
       {cargando ? (
@@ -39,7 +41,7 @@ export function Boton({ texto, onPress, tipo = 'normal', icono, cargando, desact
           <Text style={[s.botonTexto, grande && { fontSize: 16 }, { color: tinta }]}>{texto}</Text>
         </>
       )}
-    </Pressable>
+    </Pulsable>
   );
 }
 
@@ -88,7 +90,8 @@ export function Opcion({
   style?: StyleProp<ViewStyle>;
 }) {
   return (
-    <Pressable
+    <Pulsable
+      vibra="seleccion"
       accessibilityRole="radio"
       accessibilityState={{ checked: activa }}
       onPress={onPress}
@@ -106,7 +109,7 @@ export function Opcion({
       <Text style={[s.opcionTexto, vertical && { fontSize: 12, textAlign: 'center' }, activa && { fontFamily: fuente.textoFuerte }]} numberOfLines={2}>
         {texto}
       </Text>
-    </Pressable>
+    </Pulsable>
   );
 }
 
@@ -114,7 +117,8 @@ const s = StyleSheet.create({
   boton: {
     minHeight: 46,
     paddingHorizontal: 14,
-    borderRadius: 12,
+    borderRadius: 14,
+    borderCurve: 'continuous',
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',

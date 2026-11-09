@@ -1,30 +1,27 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { FiltroFecha } from '../components/FiltroFecha';
-import { Notificacion, type NotificacionRef } from '../components/Notificacion';
-import { ParteTarjeta, type Accion } from '../components/ParteTarjeta';
-import { Aviso, Boton } from '../components/ui';
-import { dentroDe, limites, SIN_FECHA, textoRango, type Rango } from '../lib/fechas';
-import { codigoParte } from '../lib/informe';
-import { buscarPartes, usePartes, type CambioParte } from '../lib/partes';
-import { useSesion } from '../lib/sesion';
-import { supabase } from '../lib/supabase';
-import { color, esHabitacion, esHoy, fuente, normalizar, ROLES, sombra, suave, type NombreIcono, type Parte } from '../lib/tema';
+import { Animated, Entra, LinearTransition, Pulsable, TarjetaEsqueleto } from '../../components/movimiento';
+import { Notificacion, type NotificacionRef } from '../../components/Notificacion';
+import { ParteTarjeta, type Accion } from '../../components/ParteTarjeta';
+import { Aviso, Boton } from '../../components/ui';
+import { useHotelElegido } from '../../lib/hotel-elegido';
+import { usePartes, type CambioParte } from '../../lib/partes';
+import { useSesion } from '../../lib/sesion';
+import { supabase } from '../../lib/supabase';
+import { color, esHabitacion, esHoy, fuente, ROLES, sombra, suave, type NombreIcono, type Parte } from '../../lib/tema';
 
 const PRIO = { urgente: 0, normal: 1, baja: 2 } as const;
 const ORDEN = { en_camino: 0, en_curso: 1, pendiente: 2, esperando: 3, resuelto: 4 } as const;
 
-export default function Inicio() {
+export default function Averias() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { perfil, hotel, hoteles } = useSesion();
   const varios = hoteles.length > 1;
-  const [verHotel, setVerHotelEstado] = useState('');
   const [selectorHotel, setSelectorHotel] = useState(false);
   const [nSolicitudes, setNSolicitudes] = useState(0);
   const esAdmin = perfil?.rol === 'admin';
@@ -41,27 +38,13 @@ export default function Inicio() {
       };
     }, [esAdmin]),
   );
-  const claveHotel = perfil ? `avisaya:hotel:${perfil.id}` : '';
-  // Recuerda el último hotel elegido en este móvil (para no tener que elegirlo cada vez)
-  useEffect(() => {
-    if (!claveHotel) return;
-    let vivo = true;
-    AsyncStorage.getItem(claveHotel)
-      .then((v) => {
-        if (vivo) setVerHotelEstado(v ?? '');
-      })
-      .catch(() => {});
-    return () => {
-      vivo = false;
-    };
-  }, [claveHotel]);
+  const [verHotel, elegirHotel] = useHotelElegido(perfil?.id);
   const setVerHotel = useCallback(
     (id: string) => {
-      setVerHotelEstado(id);
+      elegirHotel(id);
       setSelectorHotel(false);
-      if (claveHotel) AsyncStorage.setItem(claveHotel, id).catch(() => {});
     },
-    [claveHotel],
+    [elegirHotel],
   );
   // Sin elección guardada: el técnico ve todos sus hoteles; recepción y limpieza, su hotel principal
   const verEfectivo = verHotel || (perfil?.rol === 'tecnico' ? 'todos' : (hotel?.id ?? 'todos'));
@@ -75,40 +58,6 @@ export default function Inicio() {
   const [fotoGrande, setFotoGrande] = useState<string | null>(null);
   const [resolviendo, setResolviendo] = useState<Parte | null>(null);
   const [nota, setNota] = useState('');
-  const [busqueda, setBusqueda] = useState('');
-  const [rango, setRango] = useState<Rango>(SIN_FECHA);
-  const [remotos, setRemotos] = useState<{ clave: string; partes: Parte[] } | null>(null);
-  const [errorBusqueda, setErrorBusqueda] = useState('');
-  const textoBusqueda = busqueda.trim();
-  const hayTexto = textoBusqueda.length >= 2;
-  const hayFecha = rango.tipo !== 'todas';
-  const buscandoActivo = hayTexto || hayFecha;
-  const lim = limites(rango);
-  const desdeMs = lim.desde?.getTime() ?? null;
-  const hastaMs = lim.hasta?.getTime() ?? null;
-  const claveBusqueda = `${hayTexto ? textoBusqueda : ''}|${desdeMs ?? ''}|${hastaMs ?? ''}|${hotelSel ?? ''}`;
-
-  // Busca también en partes antiguos (en la base de datos), medio segundo después de dejar de escribir
-  useEffect(() => {
-    if (!buscandoActivo) return;
-    let vivo = true;
-    const t = setTimeout(async () => {
-      try {
-        const r = await buscarPartes(hayTexto ? textoBusqueda : '', desdeMs === null ? null : new Date(desdeMs), hastaMs === null ? null : new Date(hastaMs), hotelSel);
-        if (vivo) {
-          setRemotos({ clave: claveBusqueda, partes: r });
-          setErrorBusqueda('');
-        }
-      } catch {
-        if (vivo) setErrorBusqueda('No se ha podido buscar en los partes antiguos. Se muestran solo los recientes.');
-      }
-    }, 450);
-    return () => {
-      vivo = false;
-      clearTimeout(t);
-    };
-  }, [buscandoActivo, hayTexto, textoBusqueda, desdeMs, hastaMs, hotelSel, claveBusqueda]);
-
   const yoRef = useRef(perfil);
   const hotelesRef = useRef(nombresHotel);
   useEffect(() => {
@@ -158,7 +107,6 @@ export default function Inicio() {
         ['cola', 'Por hacer', abiertos.filter((p) => !p.tecnico_id || p.tecnico_id === yoId).length],
         ['mios', 'Míos', abiertos.filter((p) => p.tecnico_id === yoId).length],
         ['abiertos', 'Todos', abiertos.length],
-        ['resueltos', 'Resueltos', null],
       ];
     if (rol === 'limpieza')
       return [
@@ -168,7 +116,6 @@ export default function Inicio() {
     return [
       ['abiertos', 'Abiertos', abiertos.length],
       ['urgentes', 'Urgentes', abiertos.filter((p) => p.prioridad === 'urgente').length],
-      ['resueltos', 'Resueltos', null],
     ];
   }, [esTecnico, rol, abiertos, partes, yoId]);
 
@@ -206,32 +153,18 @@ export default function Inicio() {
     });
   }, [partes, filtroActivo, rol, esTecnico, yoId]);
 
-  // Resultados de búsqueda: los recientes al instante + los antiguos de la base de datos
-  const resultados = useMemo(() => {
-    if (!buscandoActivo) return [];
-    const q = normalizar(textoBusqueda);
-    const nombre = (id: string | null) => (id ? perfiles[id]?.nombre ?? '' : '');
-    const coincide = (p: Parte) =>
-      (!hayTexto || normalizar([p.habitacion, p.categoria, p.descripcion, p.nota_resolucion, codigoParte(p), nombre(p.creado_por), nombre(p.tecnico_id)].join(' ')).includes(q)) &&
-      dentroDe(p.creado_en, rango);
-    const mapa = new Map<string, Parte>();
-    if (remotos && remotos.clave === claveBusqueda) for (const p of remotos.partes) mapa.set(p.id, p);
-    for (const p of partes) if (coincide(p)) mapa.set(p.id, p);
-    return [...mapa.values()].sort((a, b) => b.creado_en.localeCompare(a.creado_en));
-  }, [buscandoActivo, hayTexto, textoBusqueda, rango, remotos, claveBusqueda, partes, perfiles]);
-
   const resumen: { icono: NombreIcono; texto: string; n: number; tono: string; filtro: string }[] = esTecnico
     ? [
         { icono: 'inbox', texto: 'Sin asignar', n: abiertos.filter((p) => !p.tecnico_id).length, tono: color.pendiente, filtro: 'cola' },
         { icono: 'alert-circle-outline', texto: 'Urgentes', n: abiertos.filter((p) => p.prioridad === 'urgente').length, tono: color.pendiente, filtro: 'abiertos' },
         { icono: 'account-hard-hat', texto: 'Míos', n: abiertos.filter((p) => p.tecnico_id === yoId).length, tono: color.camino, filtro: 'mios' },
-        { icono: 'check-circle-outline', texto: 'Hechos hoy', n: partes.filter((p) => p.estado === 'resuelto' && esHoy(p.resuelto_en) && p.tecnico_id === yoId).length, tono: color.ok, filtro: 'resueltos' },
+        { icono: 'check-circle-outline', texto: 'Hechos hoy', n: partes.filter((p) => p.estado === 'resuelto' && esHoy(p.resuelto_en) && p.tecnico_id === yoId).length, tono: color.ok, filtro: 'abiertos' },
       ]
     : [
         { icono: 'inbox', texto: 'Abiertos', n: abiertos.length, tono: color.camino, filtro: 'abiertos' },
         { icono: 'alert-circle-outline', texto: 'Urgentes', n: abiertos.filter((p) => p.prioridad === 'urgente').length, tono: color.pendiente, filtro: rol === 'limpieza' ? 'abiertos' : 'urgentes' },
         { icono: 'bed-empty', texto: 'Sin vender', n: new Set(abiertos.filter((p) => p.bloquea).map((p) => p.habitacion)).size, tono: color.curso, filtro: 'abiertos' },
-        { icono: 'check-circle-outline', texto: 'Resueltos hoy', n: partes.filter((p) => p.estado === 'resuelto' && esHoy(p.resuelto_en)).length, tono: color.ok, filtro: rol === 'limpieza' ? 'mios' : 'resueltos' },
+        { icono: 'check-circle-outline', texto: 'Resueltos hoy', n: partes.filter((p) => p.estado === 'resuelto' && esHoy(p.resuelto_en)).length, tono: color.ok, filtro: rol === 'limpieza' ? 'mios' : 'abiertos' },
       ];
 
   const hacer = useCallback(
@@ -327,9 +260,6 @@ export default function Inicio() {
         ))}
       </View>
 
-      {!esTecnico ? (
-        <Boton texto="Avisar de una avería" icono="plus-circle" tipo="principal" grande onPress={() => router.push({ pathname: '/nuevo', params: { hotel: hotelSel ?? '' } })} />
-      ) : null}
 
       {bloqueadas.length && rol !== 'limpieza' ? (
         <Text style={s.bloqueadas}>
@@ -337,89 +267,76 @@ export default function Inicio() {
         </Text>
       ) : null}
 
-      <View style={s.buscador}>
-        <MaterialCommunityIcons name="magnify" size={20} color={color.apagado} />
-        <TextInput
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar: habitación, avería, código, nombre…"
-          placeholderTextColor={color.apagado}
-          style={s.buscadorInput}
-          returnKeyType="search"
-          autoCorrect={false}
-          accessibilityLabel="Buscar partes"
-        />
-        {busqueda ? (
-          <Pressable onPress={() => setBusqueda('')} accessibilityRole="button" accessibilityLabel="Borrar búsqueda" hitSlop={10}>
-            <MaterialCommunityIcons name="close-circle" size={20} color={color.apagado} />
-          </Pressable>
-        ) : null}
-      </View>
-
-      <FiltroFecha valor={rango} onCambio={setRango} />
-
-      {buscandoActivo ? (
-        <Text style={s.resultadosTexto}>
-          {resultados.length === 1 ? '1 parte' : `${resultados.length} partes`}
-          {hayTexto ? ` con «${textoBusqueda}»` : ''}
-          {hayFecha ? ` · ${textoRango(rango)}` : ''}
-          {remotos?.clave !== claveBusqueda && !errorBusqueda ? ' · buscando en los antiguos…' : ''}
-        </Text>
-      ) : null}
-      <Aviso texto={buscandoActivo ? errorBusqueda : ''} />
-
-      {!buscandoActivo ? <View style={s.chips}>
+      <View style={s.chips}>
         {filtros.map(([k, t, n]) => (
-          <Pressable key={k} onPress={() => setFiltro(k)} style={[s.chip, filtroActivo === k && s.chipActivo]} accessibilityRole="tab" accessibilityState={{ selected: filtroActivo === k }}>
+          <Pulsable key={k} vibra="seleccion" onPress={() => setFiltro(k)} style={[s.chip, filtroActivo === k && s.chipActivo]} accessibilityRole="tab" accessibilityState={{ selected: filtroActivo === k }}>
             <Text style={[s.chipTexto, filtroActivo === k && { color: '#fff' }]}>
               {t}
               {n !== null ? <Text style={{ opacity: 0.7 }}> {n}</Text> : null}
             </Text>
-          </Pressable>
+          </Pulsable>
         ))}
-      </View> : null}
+      </View>
       <Aviso texto={error ?? errorAccion} />
     </View>
   );
 
   return (
     <View style={{ flex: 1, backgroundColor: color.fondo }}>
-      <View style={[s.barra, { paddingTop: insets.top + 10 }]}>
-        <View style={s.logo}>
-          <MaterialCommunityIcons name="wrench" size={20} color="#fff" />
-        </View>
-        <Pressable
-          style={{ flex: 1 }}
+      <View style={[s.barra, { paddingTop: insets.top + 8 }]}>
+        <Pulsable
+          style={s.selector}
           disabled={!varios}
+          vibra="seleccion"
           onPress={() => setSelectorHotel(true)}
           accessibilityRole={varios ? 'button' : undefined}
           accessibilityLabel={varios ? 'Cambiar de hotel' : undefined}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Text style={[s.hotel, { flexShrink: 1 }]} numberOfLines={1}>
-              {!varios ? hotel.nombre : hotelSel ? nombresHotel[hotelSel] : `Tus ${hoteles.length} hoteles`}
-            </Text>
-            {varios ? <MaterialCommunityIcons name="chevron-down" size={22} color="#fff" /> : null}
+          <View style={s.logo}>
+            <MaterialCommunityIcons name="wrench" size={15} color="#fff" />
           </View>
-          <Text style={s.usuario} numberOfLines={1}>
-            {perfil.nombre} · {ROLES[perfil.rol]}
-            {varios ? ' · toca para cambiar de hotel' : ''}
+          <Text style={s.hotel} numberOfLines={1}>
+            {!varios ? hotel.nombre : hotelSel ? nombresHotel[hotelSel] : `Tus ${hoteles.length} hoteles`}
           </Text>
-        </Pressable>
-        <Pressable onPress={() => router.push('/ajustes')} style={s.botonBarra} accessibilityRole="button" accessibilityLabel="Ajustes">
-          <MaterialCommunityIcons name="cog-outline" size={22} color="#fff" />
-        </Pressable>
+          {varios ? <MaterialCommunityIcons name="chevron-down" size={18} color={color.apagado} /> : null}
+        </Pulsable>
+        {!esTecnico ? (
+          <Pulsable vibra="medio" onPress={() => router.push({ pathname: '/nuevo', params: { hotel: hotelSel ?? '' } })} style={s.mas} accessibilityRole="button" accessibilityLabel="Avisar de una avería">
+            <MaterialCommunityIcons name="plus" size={24} color="#fff" />
+          </Pulsable>
+        ) : null}
+      </View>
+      <View style={s.titular}>
+        <Text style={s.titulo}>Averías</Text>
+        <Text style={s.usuario} numberOfLines={1}>
+          {perfil.nombre} · {ROLES[perfil.rol]}
+        </Text>
       </View>
 
-      <FlatList
-        data={buscandoActivo ? resultados : lista}
+      <Animated.FlatList
+        data={lista}
+        itemLayoutAnimation={LinearTransition.springify().damping(22).stiffness(180)}
         keyExtractor={(p) => p.id}
-        contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: insets.bottom + 32 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, gap: 12, paddingBottom: insets.bottom + 110 }}
         ListHeaderComponent={cabeceraLista}
         keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={cargando ? undefined : <Text style={s.vacio}>{buscandoActivo ? 'No hay partes que coincidan con la búsqueda.' : vacio}</Text>}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={recargar} tintColor={color.marca} />}
-        renderItem={({ item }) => (
+        ListEmptyComponent={
+          cargando ? (
+            <View style={{ gap: 12 }}>
+              <TarjetaEsqueleto />
+              <TarjetaEsqueleto />
+              <TarjetaEsqueleto />
+            </View>
+          ) : (
+            <Entra>
+              <Text style={s.vacio}>{vacio}</Text>
+            </Entra>
+          )
+        }
+        refreshControl={<RefreshControl refreshing={false} onRefresh={recargar} tintColor={color.apagado} />}
+        renderItem={({ item, index }) => (
+          <Entra orden={index}>
           <ParteTarjeta parte={item} yo={perfil} perfiles={perfiles} foto={item.foto_path ? fotos[item.foto_path] : undefined} ocupado={ocupado === item.id} onAccion={hacer} onFoto={setFotoGrande} onDetalle={abrirDetalle} hotelNombre={varios ? nombresHotel[item.hotel_id] : undefined} />
+          </Entra>
         )}
       />
 
@@ -489,11 +406,14 @@ export default function Inicio() {
 }
 
 const s = StyleSheet.create({
-  barra: { backgroundColor: color.marca, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingBottom: 14 },
-  logo: { width: 38, height: 38, borderRadius: 11, backgroundColor: color.acento, alignItems: 'center', justifyContent: 'center' },
-  hotel: { fontFamily: fuente.titulo, fontSize: 17, color: '#fff' },
-  usuario: { fontFamily: fuente.texto, fontSize: 13, color: 'rgba(255,255,255,0.8)' },
-  botonBarra: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
+  barra: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingBottom: 6 },
+  selector: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start' },
+  logo: { width: 28, height: 28, borderRadius: 8, borderCurve: 'continuous', backgroundColor: color.acento, alignItems: 'center', justifyContent: 'center' },
+  hotel: { fontFamily: fuente.textoFuerte, fontSize: 16, color: color.tinta, flexShrink: 1 },
+  mas: { width: 40, height: 40, borderRadius: 20, backgroundColor: color.acento, alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(255,106,43,0.35)' },
+  titular: { paddingHorizontal: 16, paddingBottom: 10, gap: 2 },
+  titulo: { fontFamily: fuente.tituloFuerte, fontSize: 34, color: color.tinta, letterSpacing: -0.8 },
+  usuario: { fontFamily: fuente.texto, fontSize: 14, color: color.apagado },
   resumen: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   dato: { flexBasis: '48%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: color.superficie, borderRadius: 14, padding: 12, ...sombra },
   datoIcono: { width: 38, height: 38, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
@@ -513,9 +433,6 @@ const s = StyleSheet.create({
   hotelChipActivo: { backgroundColor: color.marca, borderColor: color.marca },
   hotelChipTexto: { fontFamily: fuente.textoFuerte, fontSize: 14, color: color.tinta, flexShrink: 1 },
   hotelChipNum: { fontFamily: fuente.numero, fontSize: 13, color: color.apagado },
-  buscador: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea, borderRadius: 14, paddingHorizontal: 12 },
-  buscadorInput: { flex: 1, fontFamily: fuente.texto, fontSize: 15.5, color: color.tinta, paddingVertical: 11 },
-  resultadosTexto: { fontFamily: fuente.textoMedio, fontSize: 13.5, color: color.apagado },
   chip: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: color.superficie, borderWidth: 1, borderColor: color.linea },
   chipActivo: { backgroundColor: color.marca, borderColor: color.marca },
   chipTexto: { fontFamily: fuente.textoFuerte, fontSize: 14, color: color.tinta },
